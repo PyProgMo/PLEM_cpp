@@ -1,0 +1,26 @@
+# FLTK Template Project
+
+This is a template project using the Fast Light Toolkit (FLTK) for C++ GUI development.
+
+## Structure
+- `src/` - Source code
+- `include/` - Header files
+- `build/` - Compiled binaries and build artifacts
+- `build_windows.sh`, `build_linux.sh`, `build_mac.sh` - Build scripts for each platform
+
+## Building
+Run the appropriate build script for your platform:
+- **Windows:** `build_windows.sh`
+- **Linux:** `build_linux.sh`
+- **macOS:** `build_mac.sh`
+
+## Requirements
+- C++ compiler (MSVC, GCC, or Clang)
+- FLTK 1.4.x libraries
+
+## Usage
+After building, run the generated executable from the `build/<platform>/` directory.
+
+---
+
+*This is a template project. Customize as needed for your application.*

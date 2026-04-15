@@ -1,0 +1,17 @@
+# Ignore build artifacts
+build/
+*.exe
+*.dll
+*.o
+*.obj
+*.log
+*.tmp
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+# Ignore editor/project files
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
