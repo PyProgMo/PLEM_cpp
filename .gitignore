@@ -17,3 +17,4 @@ Thumbs.db
 *.sln.docstates
 
 # ignore specificlly build/windows/Template.exe
+build/windows/Template.exe
