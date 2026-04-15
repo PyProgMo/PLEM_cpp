@@ -6,6 +6,7 @@
 #include <FL/Fl_Float_Input.H>
 #include <FL/Fl_Int_Input.H>
 #include <FL/Fl_Light_Button.H>
+#include <FL/Fl_Check_Button.H>
 #include <FL/Fl_Choice.H>
 #include <FL/fl_draw.H>
 
@@ -285,6 +286,46 @@ public:
         
         Fl_Group* g_cam = new Fl_Group(X + 5, Y + 30, W - 10, H - 35, "Camera");
         g_cam->box(FL_ENGRAVED_BOX);
+        g_cam->begin();
+
+        Fl_Box* lbl_camera = new Fl_Box(X + 30, Y + 55, 120, 16, "Camera");
+        lbl_camera->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        Fl_Choice* ch_camera = new Fl_Choice(X + 30, Y + 73, 180, 25);
+        ch_camera->add("Andor");
+        ch_camera->add("Xenics");
+        ch_camera->value(0);
+
+        Fl_Box* lbl_exp_time = new Fl_Box(X + 240, Y + 55, 180, 16, "Exposure Time (s)");
+        lbl_exp_time->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        Fl_Float_Input* inp_exp_time = new Fl_Float_Input(X + 240, Y + 73, 180, 25);
+        inp_exp_time->value("0.1");
+
+        Fl_Check_Button* chk_vertical_binning = new Fl_Check_Button(X + 30, Y + 126, 180, 25, "Full Vertical binning");
+        chk_vertical_binning->value(0);
+
+        Fl_Group* grp_andor = new Fl_Group(X + 30, Y + 170, 390, 95);
+        grp_andor->box(FL_ENGRAVED_FRAME);
+        Fl_Box* lbl_andor = new Fl_Box(X + 40, Y + 152, 120, 16, "Andor");
+        lbl_andor->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        Fl_Input* inp_andor = new Fl_Input(X + 45, Y + 198, 360, 25, "Status");
+        inp_andor->value("ready");
+        grp_andor->end();
+
+        Fl_Group* grp_xenics = new Fl_Group(X + 30, Y + 285, 390, 95);
+        grp_xenics->box(FL_ENGRAVED_FRAME);
+        Fl_Box* lbl_xenics = new Fl_Box(X + 40, Y + 267, 120, 16, "Xenics");
+        lbl_xenics->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        Fl_Input* inp_xenics = new Fl_Input(X + 45, Y + 313, 360, 25, "Status");
+        inp_xenics->value("ready");
+        grp_xenics->end();
+
+        Fl_Group* grp_andor_settings = new Fl_Group(X + 30, Y + 400, 390, 95);
+        grp_andor_settings->box(FL_ENGRAVED_FRAME);
+        Fl_Box* lbl_andor_settings = new Fl_Box(X + 40, Y + 382, 140, 16, "Andor-settings");
+        lbl_andor_settings->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        Fl_Input* inp_andor_settings = new Fl_Input(X + 45, Y + 428, 360, 25, "Config");
+        inp_andor_settings->value("default");
+        grp_andor_settings->end();
         g_cam->end();
         
         Fl_Group* g_stage = new Fl_Group(X + 5, Y + 30, W - 10, H - 35, "Nanostage");
