@@ -37,7 +37,7 @@ public:
         // CYCLE GROUP (Parameters)
         // -------------------------------------------------------------
         int cyc_w = 340;
-        int cyc_h = 160;
+        int cyc_h = 150;
         int cyc_x = cx - cyc_w / 2;
         int cyc_y = Y + 50;
 
@@ -83,18 +83,18 @@ public:
         // -------------------------------------------------------------
         // PROGRESS BAR
         // -------------------------------------------------------------
-        Fl_Progress* prog = new Fl_Progress(cyc_x, cyc_y + cyc_h + 15, cyc_w, 10);
+        Fl_Progress* prog = new Fl_Progress(cyc_x, cyc_y + cyc_h + 12, cyc_w, 10);
         prog->selection_color(FL_BLUE);
         prog->value(5); // Small progress shown in screenshot
 
         // -------------------------------------------------------------
         // MID SECTION: Load/Save & Matrices
         // -------------------------------------------------------------
-        int mid_y = cyc_y + cyc_h + 40;
+        int mid_y = cyc_y + cyc_h + 32;
         
         // Load / Save Toggle
         new StageToggle(cx - 150, mid_y, 70, 25, "load");
-        new StageToggle(cx - 150, mid_y + 35, 70, 25, "save");
+        new StageToggle(cx - 150, mid_y + 30, 70, 25, "save");
 
         // Coordinates Matrix
         Fl_Box* lbl_coord = new Fl_Box(cx + 40, mid_y - 20, 100, 20, "coordinates");
@@ -103,23 +103,23 @@ public:
         // Spinners (using Int_Input for simplicity)
         Fl_Int_Input* coord_s1 = new Fl_Int_Input(cx - 30, mid_y, 70, 25);
         coord_s1->value("0");
-        Fl_Int_Input* coord_s2 = new Fl_Int_Input(cx - 30, mid_y + 35, 70, 25);
+        Fl_Int_Input* coord_s2 = new Fl_Int_Input(cx - 30, mid_y + 30, 70, 25);
         coord_s2->value("0");
         
         // 3x3 Table
-        Fl_Group* coord_tbl = new Fl_Group(cx + 50, mid_y, 160, 85);
+        Fl_Group* coord_tbl = new Fl_Group(cx + 50, mid_y, 160, 80);
         coord_tbl->box(FL_ENGRAVED_FRAME);
         const char* coordVals[3][3] = { {"0", "0", "0"}, {"0", "0", "0"}, {"0", "0", "0"} };
         for(int r=0; r<3; r++) {
             for(int c=0; c<3; c++) {
-                Fl_Input* in = new Fl_Input(cx + 50 + c*50 + 2, mid_y + r*28 + 2, 46, 24);
+                Fl_Input* in = new Fl_Input(cx + 50 + c*50 + 2, mid_y + r*26 + 2, 46, 22);
                 in->value(coordVals[r][c]);
             }
         }
         coord_tbl->end();
 
         // Measurement Type
-        int mid2_y = mid_y + 90;
+        int mid2_y = mid_y + 80;
         Fl_Box* lbl_meas = new Fl_Box(cx - 160, mid2_y, 110, 20, "measurement type");
         lbl_meas->labelsize(12); lbl_meas->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
         Fl_Choice* ch_meas = new Fl_Choice(cx - 160, mid2_y + 20, 110, 25);
@@ -132,15 +132,15 @@ public:
         
         Fl_Int_Input* exc_s1 = new Fl_Int_Input(cx - 30, mid2_y + 20, 70, 25);
         exc_s1->value("0");
-        Fl_Int_Input* exc_s2 = new Fl_Int_Input(cx - 30, mid2_y + 55, 70, 25);
+        Fl_Int_Input* exc_s2 = new Fl_Int_Input(cx - 30, mid2_y + 50, 70, 25);
         exc_s2->value("2195");
         
         // 2x3 Table
-        Fl_Group* exc_tbl = new Fl_Group(cx + 50, mid2_y + 20, 160, 60);
+        Fl_Group* exc_tbl = new Fl_Group(cx + 50, mid2_y + 20, 160, 56);
         exc_tbl->box(FL_ENGRAVED_FRAME);
         for(int r=0; r<2; r++) {
             for(int c=0; c<3; c++) {
-                Fl_Input* in = new Fl_Input(cx + 50 + c*50 + 2, mid2_y + 20 + r*28 + 2, 46, 24);
+                Fl_Input* in = new Fl_Input(cx + 50 + c*50 + 2, mid2_y + 20 + r*26 + 2, 46, 22);
                 in->value("0");
                 in->deactivate(); // Looks faded out in screenshot
             }
@@ -150,39 +150,54 @@ public:
         // -------------------------------------------------------------
         // BOTTOM STATS
         // -------------------------------------------------------------
-        int stat_y = mid2_y + 95;
+        int stat_y = mid2_y + 82;
         
         Fl_Box* lbl_iter = new Fl_Box(cx - 150, stat_y, 70, 20, "iterator");
-        lbl_iter->labelsize(15); lbl_iter->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-        Fl_Int_Input* in_iter = new Fl_Int_Input(cx - 150, stat_y + 20, 80, 30);
-        in_iter->value("0"); in_iter->readonly(1); in_iter->textsize(15);
+        lbl_iter->labelsize(12); lbl_iter->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        Fl_Int_Input* in_iter = new Fl_Int_Input(cx - 150, stat_y + 18, 80, 24);
+        in_iter->value("0"); in_iter->readonly(1); in_iter->textsize(13);
 
         Fl_Box* lbl_tot = new Fl_Box(cx - 40, stat_y, 70, 20, "total");
-        lbl_tot->labelsize(15); lbl_tot->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-        Fl_Int_Input* in_tot = new Fl_Int_Input(cx - 40, stat_y + 20, 80, 30);
-        in_tot->value("0"); in_tot->readonly(1); in_tot->textsize(15);
+        lbl_tot->labelsize(12); lbl_tot->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        Fl_Int_Input* in_tot = new Fl_Int_Input(cx - 40, stat_y + 18, 80, 24);
+        in_tot->value("0"); in_tot->readonly(1); in_tot->textsize(13);
 
         Fl_Box* lbl_time = new Fl_Box(cx + 70, stat_y, 80, 20, "time/min");
-        lbl_time->labelsize(15); lbl_time->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-        Fl_Int_Input* in_time = new Fl_Int_Input(cx + 70, stat_y + 20, 80, 30);
-        in_time->value("0"); in_time->readonly(1); in_time->textsize(15);
+        lbl_time->labelsize(12); lbl_time->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        Fl_Int_Input* in_time = new Fl_Int_Input(cx + 70, stat_y + 18, 80, 24);
+        in_time->value("0"); in_time->readonly(1); in_time->textsize(13);
 
         // -------------------------------------------------------------
         // COORDINATE GRAPH PLACEHOLDER
         // -------------------------------------------------------------
-        int g_y = stat_y + 60;
+        int g_y = stat_y + 48;
         Fl_Box* lbl_graph = new Fl_Box(cyc_x, g_y, 110, 20, "Coordinate Graph");
         lbl_graph->labelsize(12); lbl_graph->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
         
-        Fl_Group* grp_graph = new Fl_Group(cyc_x, g_y + 20, cyc_w, 180);
+        Fl_Group* grp_graph = new Fl_Group(cyc_x, g_y + 20, cyc_w, 160);
         grp_graph->box(FL_ENGRAVED_FRAME);
         
         // Dummy block to represent graph area
-        Fl_Box* plot_area = new Fl_Box(FL_FLAT_BOX, cyc_x + 10, g_y + 30, cyc_w - 60, 160, "");
+        const int plot_x = cyc_x + 24;
+        const int plot_y = g_y + 34;
+        const int plot_w = cyc_w - 80;
+        const int plot_h = 136;
+        Fl_Box* plot_area = new Fl_Box(FL_FLAT_BOX, plot_x, plot_y, plot_w, plot_h, "");
         plot_area->color(FL_BLACK); // Graph is dark in the preview
         
+        Fl_Box* axis_y = new Fl_Box(FL_FLAT_BOX, plot_x + 8, plot_y + 8, 2, plot_h - 16, "");
+        axis_y->color(FL_WHITE);
+        Fl_Box* axis_x = new Fl_Box(FL_FLAT_BOX, plot_x + 8, plot_y + plot_h - 10, plot_w - 16, 2, "");
+        axis_x->color(FL_WHITE);
+        Fl_Box* axis_y_lbl = new Fl_Box(plot_x - 16, plot_y + 4, 12, 20, "Y");
+        axis_y_lbl->labelcolor(FL_WHITE);
+        axis_y_lbl->labelsize(11);
+        Fl_Box* axis_x_lbl = new Fl_Box(plot_x + plot_w - 10, plot_y + plot_h - 8, 12, 20, "X");
+        axis_x_lbl->labelcolor(FL_WHITE);
+        axis_x_lbl->labelsize(11);
+        
         // Dummy legend
-        Fl_Box* grad = new Fl_Box(FL_FLAT_BOX, cyc_x + cyc_w - 40, g_y + 40, 15, 130, "");
+        Fl_Box* grad = new Fl_Box(FL_FLAT_BOX, cyc_x + cyc_w - 32, g_y + 44, 12, 120, "");
         grad->color(FL_BLUE); // Gradient placeholder
 
         grp_graph->end();
