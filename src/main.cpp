@@ -4,118 +4,261 @@
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_File_Chooser.H>
-#include <FL/Fl_Table.H>
-#include <FL/Fl_Input.H>
 #include <FL/Fl_Text_Display.H>
 #include <FL/Fl_Text_Buffer.H>
-#include <FL/Fl_Box.H>
-#include <vector>
+#include <FL/fl_draw.H>
+#include <algorithm>
+#include <cmath>
+#include <fstream>
+#include <iomanip>
+#include <sstream>
 #include <string>
-#include <filesystem>
-#include <iostream>
-#include "../include/metrics.h"
+#include <vector>
 
-std::vector<DataItem> data_items;
+struct DeviceState {
+    bool laser_initialized = false;
+    bool spectrometer_initialized = false;
+    bool ccd1_initialized = false;
+    bool ccd2_initialized = false;
+    bool cooling_active = false;
 
-std::vector<DataItem> process_folder(const std::string& folder) {
-    std::vector<DataItem> result;
-    for (const auto& entry : std::filesystem::directory_iterator(folder)) {
-        if (entry.is_regular_file()) {
-            result.push_back({
-                entry.path().filename().string(),
-                std::to_string(entry.file_size()) + " bytes",
-                entry.path().extension().string(),
-                "Ready"
-            });
-        }
+    bool all_initialized() const {
+        return laser_initialized && spectrometer_initialized && ccd1_initialized && ccd2_initialized;
     }
-    return result;
-}
+};
 
-void load_files(const std::string& folder) {
-    data_items = process_folder(folder);
-}
+class HeatmapWidget : public Fl_Widget {
+    std::vector<std::vector<double>>* matrix_;
+public:
+    HeatmapWidget(int X, int Y, int W, int H, std::vector<std::vector<double>>* matrix)
+        : Fl_Widget(X, Y, W, H), matrix_(matrix) {}
+
+    void draw() override {
+        fl_push_clip(x(), y(), w(), h());
+        fl_color(FL_WHITE);
+        fl_rectf(x(), y(), w(), h());
+
+        if (!matrix_ || matrix_->empty() || (*matrix_)[0].empty()) {
+            fl_color(FL_DARK3);
+            fl_draw("No 2D data available", x() + 8, y() + 20);
+            fl_pop_clip();
+            return;
+        }
+
+        const int rows = static_cast<int>(matrix_->size());
+        const int cols = static_cast<int>((*matrix_)[0].size());
+        const int cell_w = std::max(1, w() / cols);
+        const int cell_h = std::max(1, h() / rows);
+
+        for (int r = 0; r < rows; ++r) {
+            for (int c = 0; c < cols; ++c) {
+                const double value = std::clamp((*matrix_)[r][c], 0.0, 1.0);
+                const uchar red = static_cast<uchar>(255.0 * value);
+                const uchar blue = static_cast<uchar>(255.0 * (1.0 - value));
+                fl_color(fl_rgb_color(red, 0, blue));
+                fl_rectf(x() + c * cell_w, y() + r * cell_h, cell_w, cell_h);
+            }
+        }
+
+        fl_color(FL_BLACK);
+        fl_rect(x(), y(), w(), h());
+        fl_pop_clip();
+    }
+};
 
 class TemplateWindow : public Fl_Window {
     Fl_Tabs* tabs;
-    Fl_Group* page1;
-    Fl_Group* page2;
-    Fl_Input* folder_input;
-    Fl_Button* load_btn;
-    Fl_Button* process_btn;
-    Fl_Table* table;
-    Fl_Text_Display* text_display;
+    Fl_Group* control_page;
+    Fl_Group* data_page;
+    Fl_Button* init_btn;
+    Fl_Button* deinit_btn;
+    Fl_Button* cooling_on_btn;
+    Fl_Button* cooling_off_btn;
+    Fl_Button* measure_btn;
+    Fl_Button* save_btn;
+    Fl_Text_Display* status_display;
+    Fl_Text_Display* spectrum_display;
     Fl_Text_Buffer* text_buffer;
-    std::string selected_folder;
+    Fl_Text_Buffer* spectrum_buffer;
+    HeatmapWidget* heatmap;
+    DeviceState devices_;
+    std::vector<double> spectrum_1d_;
+    std::vector<std::vector<double>> spectrum_2d_;
 public:
     TemplateWindow(int W, int H, const char* title = 0) : Fl_Window(W, H, title) {
         tabs = new Fl_Tabs(10, 10, W-20, H-20);
-        
-        // Page 1: File Operations
-        page1 = new Fl_Group(20, 40, W-40, H-60, "File Operations");
-        
-        // Create separate label for better positioning
-        Fl_Box* folder_label = new Fl_Box(50, 70, 60, 30, "Folder:");
-        folder_label->align(FL_ALIGN_RIGHT | FL_ALIGN_INSIDE);
-        
-        folder_input = new Fl_Input(120, 70, 300, 30);
-        folder_input->value(std::filesystem::current_path().string().c_str()); // Auto-detect current directory
-        load_btn = new Fl_Button(430, 70, 80, 30, "Load");
-        process_btn = new Fl_Button(520, 70, 80, 30, "Process");
-        
-        // Text display for status/results
+
+        control_page = new Fl_Group(20, 40, W-40, H-60, "Device Control");
+        init_btn = new Fl_Button(40, 70, 150, 30, "Init Devices");
+        deinit_btn = new Fl_Button(210, 70, 150, 30, "Deinit Devices");
+        cooling_on_btn = new Fl_Button(380, 70, 170, 30, "Activate Cooling");
+        cooling_off_btn = new Fl_Button(570, 70, 190, 30, "Deactivate Cooling");
+        measure_btn = new Fl_Button(40, 115, 250, 30, "Acquire 1D + 2D Measurement");
+        save_btn = new Fl_Button(310, 115, 180, 30, "Save Spectra");
+
         text_buffer = new Fl_Text_Buffer();
-        text_display = new Fl_Text_Display(30, 110, W-60, 200);
-        text_display->buffer(text_buffer);
-        text_buffer->text("FLTK Template Application\nSelect a folder and click Load to begin.");
-        
-        load_btn->callback([](Fl_Widget*, void* v) {
+        status_display = new Fl_Text_Display(30, 165, W-60, H-235);
+        status_display->buffer(text_buffer);
+        text_buffer->text("Ready. Initialize devices before measurement.");
+
+        init_btn->callback([](Fl_Widget*, void* v) {
             TemplateWindow* win = (TemplateWindow*)v;
-            win->selected_folder = win->folder_input->value();
-            load_files(win->selected_folder);
-            win->update_display();
-            win->update_table();
+            win->init_devices();
         }, this);
-        
-        process_btn->callback([](Fl_Widget*, void* v) {
+
+        deinit_btn->callback([](Fl_Widget*, void* v) {
             TemplateWindow* win = (TemplateWindow*)v;
-            win->process_data();
+            win->deinit_devices();
         }, this);
-        
-        page1->end();
-        
-        // Page 2: Data Table
-        page2 = new Fl_Group(20, 40, W-40, H-60, "Data View");
-        table = new Fl_Table(30, 70, W-60, H-100);
-        table->rows(0);
-        table->cols(4);
-        table->col_header(1);
-        table->row_header(1);
-        table->col_width_all(150);
-        page2->end();
-        
+
+        cooling_on_btn->callback([](Fl_Widget*, void* v) {
+            TemplateWindow* win = (TemplateWindow*)v;
+            win->activate_cooling();
+        }, this);
+
+        cooling_off_btn->callback([](Fl_Widget*, void* v) {
+            TemplateWindow* win = (TemplateWindow*)v;
+            win->deactivate_cooling();
+        }, this);
+
+        measure_btn->callback([](Fl_Widget*, void* v) {
+            TemplateWindow* win = (TemplateWindow*)v;
+            win->acquire_measurement();
+        }, this);
+
+        save_btn->callback([](Fl_Widget*, void* v) {
+            TemplateWindow* win = (TemplateWindow*)v;
+            win->save_spectra();
+        }, this);
+
+        control_page->end();
+
+        data_page = new Fl_Group(20, 40, W-40, H-60, "Measurement Data");
+        spectrum_buffer = new Fl_Text_Buffer();
+        spectrum_display = new Fl_Text_Display(30, 70, W / 2 - 35, H - 120);
+        spectrum_display->buffer(spectrum_buffer);
+        spectrum_buffer->text("1D spectrum will be shown here.");
+        heatmap = new HeatmapWidget(W / 2 + 5, 70, W / 2 - 35, H - 120, &spectrum_2d_);
+        data_page->end();
+
         tabs->end();
         end();
     }
-    
-    void update_display() {
-        std::string status = "Loaded " + std::to_string(data_items.size()) + " items from: " + selected_folder;
+
+    ~TemplateWindow() override {
+        deinit_devices();
+    }
+
+    int handle(int event) override {
+        if (event == FL_CLOSE) {
+            deinit_devices();
+        }
+        return Fl_Window::handle(event);
+    }
+
+    void set_status(const std::string& status) {
         text_buffer->text(status.c_str());
     }
-    
-    void update_table() {
-        table->rows(data_items.size());
-        redraw();
+
+    void init_devices() {
+        devices_.laser_initialized = true;
+        devices_.spectrometer_initialized = true;
+        devices_.ccd1_initialized = true;
+        devices_.ccd2_initialized = true;
+        set_status("Devices initialized: laser, spectrometer, CCD camera 1, CCD camera 2.");
     }
-    
-    void process_data() {
-        text_buffer->text("Processing data... (implement your custom logic here)");
-        // Add your processing logic here
+
+    void deinit_devices() {
+        if (!devices_.all_initialized() && !devices_.cooling_active) {
+            return;
+        }
+        devices_.cooling_active = false;
+        devices_.laser_initialized = false;
+        devices_.spectrometer_initialized = false;
+        devices_.ccd1_initialized = false;
+        devices_.ccd2_initialized = false;
+        set_status("Devices deinitialized. Cooling disabled.");
+    }
+
+    void activate_cooling() {
+        if (!devices_.all_initialized()) {
+            set_status("Cannot activate cooling: initialize all devices first.");
+            return;
+        }
+        devices_.cooling_active = true;
+        set_status("Cooling activated.");
+    }
+
+    void deactivate_cooling() {
+        devices_.cooling_active = false;
+        set_status("Cooling deactivated.");
+    }
+
+    void acquire_measurement() {
+        if (!devices_.all_initialized()) {
+            set_status("Cannot acquire measurement: initialize all devices first.");
+            return;
+        }
+        spectrum_1d_.clear();
+        spectrum_2d_.assign(16, std::vector<double>(16, 0.0));
+
+        for (int i = 0; i < 128; ++i) {
+            const double t = static_cast<double>(i) / 127.0;
+            const double signal = 0.5 + 0.5 * std::sin(14.0 * t) * std::exp(-1.8 * t);
+            spectrum_1d_.push_back(std::clamp(signal, 0.0, 1.0));
+        }
+
+        for (size_t r = 0; r < spectrum_2d_.size(); ++r) {
+            for (size_t c = 0; c < spectrum_2d_[r].size(); ++c) {
+                const double x = static_cast<double>(c) / (spectrum_2d_[r].size() - 1);
+                const double y = static_cast<double>(r) / (spectrum_2d_.size() - 1);
+                const double peak = std::exp(-16.0 * ((x - 0.5) * (x - 0.5) + (y - 0.5) * (y - 0.5)));
+                spectrum_2d_[r][c] = std::clamp(0.15 + 0.85 * peak, 0.0, 1.0);
+            }
+        }
+
+        std::ostringstream stream;
+        stream << "Index\tIntensity\n";
+        for (size_t i = 0; i < spectrum_1d_.size(); ++i) {
+            stream << i << "\t" << std::fixed << std::setprecision(6) << spectrum_1d_[i] << "\n";
+        }
+        spectrum_buffer->text(stream.str().c_str());
+        heatmap->redraw();
+
+        set_status(devices_.cooling_active
+            ? "Measurement acquired with cooling active."
+            : "Measurement acquired (cooling inactive).");
+    }
+
+    void save_spectra() {
+        if (spectrum_1d_.empty()) {
+            set_status("No spectrum to save. Acquire measurement first.");
+            return;
+        }
+
+        const char* path = fl_file_chooser("Save Spectrum CSV", "*.csv", "spectrum.csv");
+        if (!path) {
+            set_status("Save cancelled.");
+            return;
+        }
+
+        std::ofstream out(path);
+        if (!out.is_open()) {
+            set_status("Failed to save spectrum file.");
+            return;
+        }
+
+        out << "index,intensity\n";
+        for (size_t i = 0; i < spectrum_1d_.size(); ++i) {
+            out << i << "," << std::fixed << std::setprecision(6) << spectrum_1d_[i] << "\n";
+        }
+        out.close();
+        set_status(std::string("Spectrum saved to: ") + path);
     }
 };
 
 int main(int argc, char** argv) {
-    TemplateWindow win(800, 600, "FLTK Template Application");
+    TemplateWindow win(900, 650, "HSI Measurement Control");
     win.show(argc, argv);
     return Fl::run();
 }
