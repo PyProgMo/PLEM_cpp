@@ -37,106 +37,119 @@ public:
         // -------------------------------------------------------------
         // TOP LEFT: Device Status LEDs
         // -------------------------------------------------------------
-        int b1_w = 130;
-        int b1_h = 230;
-        int b1_x = cx - b1_w - 5;
+        int row_height = 28;
+        int max_rows = 9; // 9 rows for 9 init toggles
+        
+        int b1_w = 140;
+        int b1_h = max_rows * row_height + 20;
+        int b1_x = cx - b1_w - 10;
         int b1_y = Y + 20;
 
         Fl_Group* p1 = new Fl_Group(b1_x, b1_y, b1_w, b1_h);
-        p1->box(FL_ENGRAVED_FRAME);
+        p1->box(FL_ROUNDED_BOX);
+        p1->color(fl_rgb_color(240, 240, 240));
         
-        const char* devNames[] = {"spectrograph", "lightsource", "powermeter", "nanostage", "cameras", "velleman", "ANDOR", "xeva"};
-        for(int i=0; i<8; i++) {
-            int yy = b1_y + 10 + i*26;
-            FancyLED* led = new FancyLED(b1_x + 10, yy, 16, 16);
+        const char* devNames[] = {"spectrograph", "lightsource", "powermeter", "nanostage", "cameras", "init Newton", "init iDus", "init Clara", "init Xeva"};
+        for(int i=0; i<9; i++) {
+            int yy = b1_y + 10 + i*row_height;
+            FancyLED* led = new FancyLED(b1_x + 15, yy + 4, 18, 18);
             if(i == 3) led->set_state(false); // Nanostage is green in screenshot
             
-            Fl_Box* lbl = new Fl_Box(b1_x + 35, yy, b1_w - 40, 16, devNames[i]);
+            Fl_Box* lbl = new Fl_Box(b1_x + 45, yy, b1_w - 50, 26, devNames[i]);
             lbl->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-            lbl->labelsize(12);
+            lbl->labelsize(13);
+            lbl->labelfont(FL_HELVETICA_BOLD);
         }
         p1->end();
 
         // -------------------------------------------------------------
         // TOP RIGHT: Device Init Toggles
         // -------------------------------------------------------------
-        int b2_w = 130;
-        int b2_h = 200;
-        int b2_x = cx + 5;
-        int b2_y = Y + 20;
+        int b2_w = 140;
+        int b2_h = b1_h;
+        int b2_x = cx + 10;
+        int b2_y = b1_y;
         
         Fl_Group* p2 = new Fl_Group(b2_x, b2_y, b2_w, b2_h);
-        p2->box(FL_ENGRAVED_FRAME);
+        p2->box(FL_ROUNDED_BOX);
+        p2->color(fl_rgb_color(240, 240, 240));
         
-        const char* initNames[] = {"spectrograph", "lightsource", "powermeter", "nanostage", "cameras", "xeva"};
-        for(int i=0; i<6; i++) {
-            int yy = b2_y + 15 + i*30;
-            FancyToggle* tgl = new FancyToggle(b2_x + 10, yy, 110, 22, initNames[i]);
+        const char* initNames[] = {"spectrograph", "lightsource", "powermeter", "nanostage", "cameras (all)", "init Newton", "init iDus", "init Clara", "init Xeva"};
+        for(int i=0; i<9; i++) {
+            int yy = b2_y + 10 + i*row_height;
+            FancyToggle* tgl = new FancyToggle(b2_x + 10, yy + 2, 120, 24, initNames[i]);
             tgl->labelsize(12);
+            tgl->labelfont(FL_HELVETICA_BOLD);
         }
         p2->end();
 
         // -------------------------------------------------------------
-        // BOTTOM LEFT: Camera Status Matrix
+        // BOTTOM LEFT: Camera Temperature Setup (Moved above matrix)
         // -------------------------------------------------------------
-        int b3_w = 175;
-        int b3_h = 130;
-        int b3_x = cx - b3_w + 10;
-        int b3_y = b1_y + b1_h + 15;
-
-        Fl_Group* p3 = new Fl_Group(b3_x, b3_y, b3_w, b3_h);
-        p3->box(FL_ENGRAVED_FRAME);
-        
-        // Matrix Headers
-        Fl_Box* l1 = new Fl_Box(b3_x + 50, b3_y + 5, 30, 14, "Init");
-        Fl_Box* l2 = new Fl_Box(b3_x + 85, b3_y + 5, 45, 14, "Cooling");
-        Fl_Box* l3 = new Fl_Box(b3_x + 130, b3_y + 5, 60, 14, "Parameters");
-        l1->labelsize(11); l2->labelsize(11); l3->labelsize(11);
-
-        const char* camNames[] = {"Newton", "iDus", "Clara", "Xeva"};
-        for(int i=0; i<4; i++) {
-            int yy = b3_y + 25 + i*24;
-            Fl_Box* cName = new Fl_Box(b3_x + 2, yy, 45, 16, camNames[i]);
-            cName->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-            cName->labelsize(12);
-            
-            // 3 LEDs per row
-            new FancyLED(b3_x + 58, yy, 14, 14);
-            new FancyLED(b3_x + 100, yy, 14, 14);
-            new FancyLED(b3_x + 150, yy, 14, 14);
-        }
-        p3->end();
-
-        // -------------------------------------------------------------
-        // BOTTOM RIGHT: Camera Temperature Setup
-        // -------------------------------------------------------------
-        int b4_w = 120;
-        int b4_h = 130;
-        int b4_x = b3_x + b3_w + 5;
-        int b4_y = b3_y;
+        int b4_w = 140;
+        int b4_h = 145;
+        int b4_x = b1_x; // Align with left column
+        int b4_y = b1_y + b1_h + 20;
 
         Fl_Group* p4 = new Fl_Group(b4_x, b4_y, b4_w, b4_h);
-        p4->box(FL_ENGRAVED_FRAME);
+        p4->box(FL_ROUNDED_BOX);
+        p4->color(fl_rgb_color(240, 240, 240));
         
         double defaultTemps[] = {-90, -70, -55, -70};
         const char* tempNames[] = {"iDus", "Newton", "Clara", "Xeva"};
         for(int i=0; i<4; i++) {
-            int yy = b4_y + 10 + i*28;
-            Fl_Box* cName = new Fl_Box(b4_x + 5, yy, 45, 20, tempNames[i]);
+            int yy = b4_y + 15 + i*30;
+            Fl_Box* cName = new Fl_Box(b4_x + 10, yy, 50, 20, tempNames[i]);
             cName->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-            cName->labelsize(12);
+            cName->labelsize(13);
+            cName->labelfont(FL_HELVETICA_BOLD);
             
             // Yellow toggle
-            new FancyToggle(b4_x + 50, yy, 22, 20, "");
+            FancyToggle* tgl = new FancyToggle(b4_x + 60, yy, 22, 22, "");
+            tgl->value(1);
             
             // Value input 
-            Fl_Value_Input* val = new Fl_Value_Input(b4_x + 75, yy, 40, 20);
+            Fl_Value_Input* val = new Fl_Value_Input(b4_x + 85, yy, 45, 22);
             val->value(defaultTemps[i]);
             val->step(1);
             val->textsize(12);
             val->box(FL_DOWN_BOX);
         }
         p4->end();
+
+        // -------------------------------------------------------------
+        // BOTTOM: Camera Status Matrix (Moved below Temperature Setup)
+        // -------------------------------------------------------------
+        int b3_w = 230;
+        int b3_h = 145;
+        int b3_x = b1_x; // Align with left column
+        int b3_y = b4_y + b4_h + 15;
+
+        Fl_Group* p3 = new Fl_Group(b3_x, b3_y, b3_w, b3_h);
+        p3->box(FL_ROUNDED_BOX);
+        p3->color(fl_rgb_color(240, 240, 240));
+        
+        // Matrix Headers
+        Fl_Box* l1 = new Fl_Box(b3_x + 75, b3_y + 10, 30, 14, "Init");
+        Fl_Box* l2 = new Fl_Box(b3_x + 115, b3_y + 10, 45, 14, "Cooling");
+        Fl_Box* l3 = new Fl_Box(b3_x + 165, b3_y + 10, 60, 14, "Param");
+        l1->labelsize(12); l2->labelsize(12); l3->labelsize(12);
+        l1->labelfont(FL_HELVETICA_BOLD); l2->labelfont(FL_HELVETICA_BOLD); l3->labelfont(FL_HELVETICA_BOLD);
+
+        const char* camNames[] = {"Newton", "iDus", "Clara", "Xeva"};
+        for(int i=0; i<4; i++) {
+            int yy = b3_y + 35 + i*26;
+            Fl_Box* cName = new Fl_Box(b3_x + 15, yy, 55, 16, camNames[i]);
+            cName->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+            cName->labelsize(13);
+            cName->labelfont(FL_HELVETICA_BOLD);
+            
+            // 3 LEDs per row
+            new FancyLED(b3_x + 83, yy, 16, 16);
+            new FancyLED(b3_x + 130, yy, 16, 16);
+            new FancyLED(b3_x + 187, yy, 16, 16);
+        }
+        p3->end();
 
         end();
     }

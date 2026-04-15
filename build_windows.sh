@@ -2,6 +2,10 @@
 # Build script for Windows (MSYS2 MinGW 64-bit)
 # Requires FLTK installed via MSYS2: pacman -S mingw-w64-x86_64-fltk
 
+# Configuration
+# Set to 'true' to start the executable automatically after a successful build
+START_AFTER_BUILD=true
+
 COMPILER="x86_64-w64-mingw32-g++"
 if ! command -v $COMPILER &> /dev/null; then
     echo "MinGW 64-bit compiler not found. Please run this in MSYS2 MinGW 64-bit terminal."
@@ -19,6 +23,11 @@ $COMPILER -std=c++17 -Iinclude -I/mingw64/include src/main.cpp -o build/windows/
 
 if [ -f build/windows/Template.exe ]; then
     echo "Build successful! Executable: build/windows/Template.exe"
+    
+    if [ "$START_AFTER_BUILD" = true ]; then
+        echo "Starting application..."
+        ./build/windows/Template.exe &
+    fi
 else
     echo "Build failed. Check error messages above."
     exit 1
