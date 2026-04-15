@@ -88,59 +88,60 @@ public:
         prog->value(5); // Small progress shown in screenshot
 
         // -------------------------------------------------------------
-        // MID SECTION: Load/Save & Matrices
+        // MID SECTION: Load/Save/Measurement Type in one row
         // -------------------------------------------------------------
-        int mid_y = cyc_y + cyc_h + 32;
+        int mid_y = cyc_y + cyc_h + 45;
         
-        // Load / Save Toggle
-        new StageToggle(cx - 150, mid_y, 70, 25, "load");
-        new StageToggle(cx - 150, mid_y + 30, 70, 25, "save");
+        // Load / Save Toggle in one row
+        new StageToggle(cx - 180, mid_y, 65, 25, "load");
+        new StageToggle(cx - 105, mid_y, 65, 25, "save");
 
-        // Coordinates Matrix
-        Fl_Box* lbl_coord = new Fl_Box(cx + 40, mid_y - 20, 100, 20, "coordinates");
+        // Measurement Type in same row
+        Fl_Box* lbl_meas = new Fl_Box(cx - 20, mid_y, 100, 20, "measurement type");
+        lbl_meas->labelsize(12); lbl_meas->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        Fl_Choice* ch_meas = new Fl_Choice(cx - 20, mid_y + 18, 110, 25);
+        ch_meas->add("spectrum");
+        ch_meas->value(0);
+
+        // Coordinates Section (moved down and to the left)
+        int coord_y = mid_y + 65;
+        Fl_Box* lbl_coord = new Fl_Box(cx - 180, coord_y, 100, 20, "coordinates");
         lbl_coord->labelsize(12);
         
         // Spinners (using Int_Input for simplicity)
-        Fl_Int_Input* coord_s1 = new Fl_Int_Input(cx - 30, mid_y, 70, 25);
+        Fl_Int_Input* coord_s1 = new Fl_Int_Input(cx - 180, coord_y + 25, 65, 25);
         coord_s1->value("0");
-        Fl_Int_Input* coord_s2 = new Fl_Int_Input(cx - 30, mid_y + 30, 70, 25);
+        Fl_Int_Input* coord_s2 = new Fl_Int_Input(cx - 180, coord_y + 55, 65, 25);
         coord_s2->value("0");
         
-        // 3x3 Table
-        Fl_Group* coord_tbl = new Fl_Group(cx + 50, mid_y, 160, 80);
+        // 3x3 Table - moved left and down
+        Fl_Group* coord_tbl = new Fl_Group(cx - 105, coord_y + 25, 140, 80);
         coord_tbl->box(FL_ENGRAVED_FRAME);
         const char* coordVals[3][3] = { {"0", "0", "0"}, {"0", "0", "0"}, {"0", "0", "0"} };
         for(int r=0; r<3; r++) {
             for(int c=0; c<3; c++) {
-                Fl_Input* in = new Fl_Input(cx + 50 + c*50 + 2, mid_y + r*26 + 2, 46, 22);
+                Fl_Input* in = new Fl_Input(cx - 105 + c*45 + 2, coord_y + 25 + r*26 + 2, 41, 22);
                 in->value(coordVals[r][c]);
             }
         }
         coord_tbl->end();
 
-        // Measurement Type
-        int mid2_y = mid_y + 80;
-        Fl_Box* lbl_meas = new Fl_Box(cx - 160, mid2_y, 110, 20, "measurement type");
-        lbl_meas->labelsize(12); lbl_meas->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-        Fl_Choice* ch_meas = new Fl_Choice(cx - 160, mid2_y + 20, 110, 25);
-        ch_meas->add("spectrum");
-        ch_meas->value(0);
-
-        // Excitation Matrix
-        Fl_Box* lbl_exc = new Fl_Box(cx + 40, mid2_y, 100, 20, "excitation");
+        // Excitation Section (moved down with more space)
+        int exc_y = coord_y + 115;
+        Fl_Box* lbl_exc = new Fl_Box(cx - 180, exc_y, 100, 20, "excitation");
         lbl_exc->labelsize(12);
         
-        Fl_Int_Input* exc_s1 = new Fl_Int_Input(cx - 30, mid2_y + 20, 70, 25);
+        Fl_Int_Input* exc_s1 = new Fl_Int_Input(cx - 180, exc_y + 25, 65, 25);
         exc_s1->value("0");
-        Fl_Int_Input* exc_s2 = new Fl_Int_Input(cx - 30, mid2_y + 50, 70, 25);
+        Fl_Int_Input* exc_s2 = new Fl_Int_Input(cx - 180, exc_y + 55, 65, 25);
         exc_s2->value("2195");
         
-        // 2x3 Table
-        Fl_Group* exc_tbl = new Fl_Group(cx + 50, mid2_y + 20, 160, 56);
+        // 2x3 Table - moved left with more space
+        Fl_Group* exc_tbl = new Fl_Group(cx - 105, exc_y + 25, 140, 56);
         exc_tbl->box(FL_ENGRAVED_FRAME);
         for(int r=0; r<2; r++) {
             for(int c=0; c<3; c++) {
-                Fl_Input* in = new Fl_Input(cx + 50 + c*50 + 2, mid2_y + 20 + r*26 + 2, 46, 22);
+                Fl_Input* in = new Fl_Input(cx - 105 + c*45 + 2, exc_y + 25 + r*26 + 2, 41, 22);
                 in->value("0");
                 in->deactivate(); // Looks faded out in screenshot
             }
@@ -150,7 +151,7 @@ public:
         // -------------------------------------------------------------
         // BOTTOM STATS
         // -------------------------------------------------------------
-        int stat_y = mid2_y + 82;
+        int stat_y = exc_y + 92;
         
         Fl_Box* lbl_iter = new Fl_Box(cx - 150, stat_y, 70, 20, "iterator");
         lbl_iter->labelsize(12); lbl_iter->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
