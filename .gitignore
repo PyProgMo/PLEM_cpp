@@ -15,3 +15,5 @@ Thumbs.db
 *.user
 *.userosscache
 *.sln.docstates
+
+# ignore specificlly build/windows/Template.exe
