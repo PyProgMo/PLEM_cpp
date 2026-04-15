@@ -6,6 +6,7 @@
 #include <FL/Fl_Float_Input.H>
 #include <FL/Fl_Int_Input.H>
 #include <FL/Fl_Light_Button.H>
+#include <FL/Fl_Check_Button.H>
 #include <FL/Fl_Choice.H>
 #include <FL/fl_draw.H>
 
@@ -291,7 +292,7 @@ public:
         lbl_camera->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
         Fl_Choice* ch_camera = new Fl_Choice(X + 30, Y + 73, 180, 25);
         ch_camera->add("Andor");
-        ch_camera->add("Xenix");
+        ch_camera->add("Xenics");
         ch_camera->value(0);
 
         Fl_Box* lbl_exp_time = new Fl_Box(X + 240, Y + 55, 180, 16, "Exposure Time (s)");
@@ -299,12 +300,8 @@ public:
         Fl_Float_Input* inp_exp_time = new Fl_Float_Input(X + 240, Y + 73, 180, 25);
         inp_exp_time->value("0.1");
 
-        Fl_Box* lbl_vert_bin = new Fl_Box(X + 30, Y + 108, 180, 16, "Full Vertical binning");
-        lbl_vert_bin->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-        Fl_Choice* ch_vert_bin = new Fl_Choice(X + 30, Y + 126, 180, 25);
-        ch_vert_bin->add("false");
-        ch_vert_bin->add("true");
-        ch_vert_bin->value(0);
+        Fl_Check_Button* chk_vertical_binning = new Fl_Check_Button(X + 30, Y + 126, 180, 25, "Full Vertical binning");
+        chk_vertical_binning->value(0);
 
         Fl_Group* grp_andor = new Fl_Group(X + 30, Y + 170, 390, 95);
         grp_andor->box(FL_ENGRAVED_FRAME);
@@ -314,13 +311,13 @@ public:
         inp_andor->value("ready");
         grp_andor->end();
 
-        Fl_Group* grp_xenix = new Fl_Group(X + 30, Y + 285, 390, 95);
-        grp_xenix->box(FL_ENGRAVED_FRAME);
-        Fl_Box* lbl_xenix = new Fl_Box(X + 40, Y + 267, 120, 16, "Xenix");
-        lbl_xenix->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-        Fl_Input* inp_xenix = new Fl_Input(X + 45, Y + 313, 360, 25, "Status");
-        inp_xenix->value("ready");
-        grp_xenix->end();
+        Fl_Group* grp_xenics = new Fl_Group(X + 30, Y + 285, 390, 95);
+        grp_xenics->box(FL_ENGRAVED_FRAME);
+        Fl_Box* lbl_xenics = new Fl_Box(X + 40, Y + 267, 120, 16, "Xenics");
+        lbl_xenics->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        Fl_Input* inp_xenics = new Fl_Input(X + 45, Y + 313, 360, 25, "Status");
+        inp_xenics->value("ready");
+        grp_xenics->end();
 
         Fl_Group* grp_andor_settings = new Fl_Group(X + 30, Y + 400, 390, 95);
         grp_andor_settings->box(FL_ENGRAVED_FRAME);
