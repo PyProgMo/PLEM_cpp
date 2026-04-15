@@ -199,12 +199,18 @@ public:
             set_status("Cannot acquire measurement: initialize all devices first.");
             return;
         }
+        constexpr double SPECTRUM_FREQUENCY_SCALE = 14.0;
+        constexpr double SPECTRUM_DECAY_RATE = 1.8;
+        constexpr double HEATMAP_GAUSSIAN_WIDTH = 16.0;
+        constexpr double HEATMAP_BASELINE_INTENSITY = 0.15;
+        constexpr double HEATMAP_PEAK_AMPLITUDE = 0.85;
+
         spectrum_1d_.clear();
         spectrum_2d_.assign(16, std::vector<double>(16, 0.0));
 
         for (int i = 0; i < 128; ++i) {
             const double t = static_cast<double>(i) / 127.0;
-            const double signal = 0.5 + 0.5 * std::sin(14.0 * t) * std::exp(-1.8 * t);
+            const double signal = 0.5 + 0.5 * std::sin(SPECTRUM_FREQUENCY_SCALE * t) * std::exp(-SPECTRUM_DECAY_RATE * t);
             spectrum_1d_.push_back(std::clamp(signal, 0.0, 1.0));
         }
 
@@ -212,8 +218,8 @@ public:
             for (size_t c = 0; c < spectrum_2d_[r].size(); ++c) {
                 const double x = static_cast<double>(c) / (spectrum_2d_[r].size() - 1);
                 const double y = static_cast<double>(r) / (spectrum_2d_.size() - 1);
-                const double peak = std::exp(-16.0 * ((x - 0.5) * (x - 0.5) + (y - 0.5) * (y - 0.5)));
-                spectrum_2d_[r][c] = std::clamp(0.15 + 0.85 * peak, 0.0, 1.0);
+                const double peak = std::exp(-HEATMAP_GAUSSIAN_WIDTH * ((x - 0.5) * (x - 0.5) + (y - 0.5) * (y - 0.5)));
+                spectrum_2d_[r][c] = std::clamp(HEATMAP_BASELINE_INTENSITY + HEATMAP_PEAK_AMPLITUDE * peak, 0.0, 1.0);
             }
         }
 
