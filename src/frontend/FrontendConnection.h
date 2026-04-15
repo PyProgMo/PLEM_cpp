@@ -23,6 +23,34 @@
 #include "tabs/TabAcquisitionSetup.h"
 #include "tabs/TabLaserCmd.h"
 
+class DragAwareTabs : public Fl_Tabs {
+public:
+    DragAwareTabs(int X, int Y, int W, int H, const char* L = 0) : Fl_Tabs(X, Y, W, H, L) {}
+
+    int handle(int event) override {
+        int handled = Fl_Tabs::handle(event);
+        if (event == FL_DRAG || event == FL_RELEASE) {
+            refresh_tab_headers();
+        }
+        return handled;
+    }
+
+    void resize(int X, int Y, int W, int H) override {
+        Fl_Tabs::resize(X, Y, W, H);
+        refresh_tab_headers();
+    }
+
+private:
+    void refresh_tab_headers() {
+        for (int i = 0; i < children(); ++i) {
+            if (Fl_Widget* tab = child(i)) {
+                tab->redraw_label();
+            }
+        }
+        redraw();
+    }
+};
+
 class FrontendConnection : public Fl_Window {
 public:
     FrontendConnection(int W, int H, const char* title = 0) : Fl_Window(W, H, title) {
@@ -31,7 +59,7 @@ public:
         
         // Left pane (30% of width)
         int lw = W * 3 / 10;
-        Fl_Tabs* ltabs = new Fl_Tabs(0, 0, lw, H);
+        DragAwareTabs* ltabs = new DragAwareTabs(0, 0, lw, H);
         new TabConfiguration(0, 30, lw, H - 30, "Configuration");
         new TabTimedMeasurement(0, 30, lw, H - 30, "Timed Meas.");
         new TabAutoStage(0, 30, lw, H - 30, "Auto-Stage");
@@ -45,7 +73,7 @@ public:
         int rth = H * 4 / 5; // Give 80% height to Spectrum/Image
         
         // Right Top (Displays / Blank Frame)
-        Fl_Tabs* rttabs = new Fl_Tabs(lw, 0, W - lw, rth);
+        DragAwareTabs* rttabs = new DragAwareTabs(lw, 0, W - lw, rth);
         new TabSpectrum(lw, 30, W - lw, rth - 30, "Spectrum");
         new TabImage(lw, 30, W - lw, rth - 30, "Image");
         rttabs->end();
@@ -57,7 +85,7 @@ public:
         
         Fl_Group* bot_grp = new Fl_Group(lw, rth, rbw, H - rth);
         
-        Fl_Tabs* rbtabs = new Fl_Tabs(lw, rth, tab_w, H - rth);
+        DragAwareTabs* rbtabs = new DragAwareTabs(lw, rth, tab_w, H - rth);
         new TabMeasurement(lw, rth + 30, tab_w, H - rth - 30, "Measurement");
         new TabDisplayOptions(lw, rth + 30, tab_w, H - rth - 30, "Display Options");
         new TabSave(lw, rth + 30, tab_w, H - rth - 30, "Save");
