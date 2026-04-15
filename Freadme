@@ -1,6 +1,6 @@
-# FLTK Template Project
+# HSI Measurement Control (FLTK)
 
-This is a template project using the Fast Light Toolkit (FLTK) for C++ GUI development.
+This is an FLTK desktop application for basic hyperspectral measurement workflow simulation.
 
 ## Structure
 - `src/` - Source code
@@ -21,6 +21,14 @@ Run the appropriate build script for your platform:
 ## Usage
 After building, run the generated executable from the `build/<platform>/` directory.
 
+Current UI capabilities:
+- initialize laser, spectrometer and two CCD devices
+- deinitialize devices safely (also on app close)
+- activate/deactivate cooling
+- acquire and display 1D spectrum data
+- display 2D measurement heatmap data
+- save spectrum data as CSV
+
 ---
 
-*This is a template project. Customize as needed for your application.*
+*Use this as a base for real hardware integration by replacing the simulated measurement generation with hardware drivers.*
