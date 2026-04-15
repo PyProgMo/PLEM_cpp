@@ -25,6 +25,10 @@ struct DeviceState {
     bool all_initialized() const {
         return laser_initialized && spectrometer_initialized && ccd1_initialized && ccd2_initialized;
     }
+
+    bool any_initialized() const {
+        return laser_initialized || spectrometer_initialized || ccd1_initialized || ccd2_initialized;
+    }
 };
 
 class HeatmapWidget : public Fl_Widget {
@@ -149,13 +153,6 @@ public:
         deinit_devices();
     }
 
-    int handle(int event) override {
-        if (event == FL_CLOSE) {
-            deinit_devices();
-        }
-        return Fl_Window::handle(event);
-    }
-
     void set_status(const std::string& status) {
         text_buffer->text(status.c_str());
     }
@@ -169,7 +166,7 @@ public:
     }
 
     void deinit_devices() {
-        if (!devices_.all_initialized() && !devices_.cooling_active) {
+        if (!devices_.any_initialized() && !devices_.cooling_active) {
             return;
         }
         devices_.cooling_active = false;
@@ -199,6 +196,7 @@ public:
             set_status("Cannot acquire measurement: initialize all devices first.");
             return;
         }
+        constexpr int HEATMAP_DIMENSION = 16;
         constexpr double SPECTRUM_FREQUENCY_SCALE = 14.0;
         constexpr double SPECTRUM_DECAY_RATE = 1.8;
         constexpr double HEATMAP_GAUSSIAN_WIDTH = 16.0;
@@ -206,7 +204,7 @@ public:
         constexpr double HEATMAP_PEAK_AMPLITUDE = 0.85;
 
         spectrum_1d_.clear();
-        spectrum_2d_.assign(16, std::vector<double>(16, 0.0));
+        spectrum_2d_.assign(HEATMAP_DIMENSION, std::vector<double>(HEATMAP_DIMENSION, 0.0));
 
         for (int i = 0; i < 128; ++i) {
             const double t = static_cast<double>(i) / 127.0;
