@@ -6,10 +6,38 @@
 #include <FL/Fl_Float_Input.H>
 #include <FL/Fl_Light_Button.H>
 
+class DragAwareSubTabs : public Fl_Tabs {
+public:
+    DragAwareSubTabs(int X, int Y, int W, int H, const char* L = 0) : Fl_Tabs(X, Y, W, H, L) {}
+
+    int handle(int event) override {
+        int handled = Fl_Tabs::handle(event);
+        if (event == FL_DRAG || event == FL_RELEASE) {
+            refresh_tab_headers();
+        }
+        return handled;
+    }
+
+    void resize(int X, int Y, int W, int H) override {
+        Fl_Tabs::resize(X, Y, W, H);
+        refresh_tab_headers();
+    }
+
+private:
+    void refresh_tab_headers() {
+        for (int i = 0; i < children(); ++i) {
+            if (Fl_Widget* tab = child(i)) {
+                tab->redraw_label();
+            }
+        }
+        redraw();
+    }
+};
+
 class TabConfiguration : public Fl_Group {
 public:
     TabConfiguration(int X, int Y, int W, int H, const char* L = 0) : Fl_Group(X, Y, W, H, L) {
-        Fl_Tabs* subtabs = new Fl_Tabs(X + 5, Y + 5, W - 10, H - 10);
+        DragAwareSubTabs* subtabs = new DragAwareSubTabs(X + 5, Y + 5, W - 10, H - 10);
         
         Fl_Group* g_light = new Fl_Group(X + 5, Y + 30, W - 10, H - 35, "Lightsource");
         g_light->box(FL_ENGRAVED_BOX);
