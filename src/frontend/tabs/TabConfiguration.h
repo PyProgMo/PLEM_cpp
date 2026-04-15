@@ -285,6 +285,50 @@ public:
         
         Fl_Group* g_cam = new Fl_Group(X + 5, Y + 30, W - 10, H - 35, "Camera");
         g_cam->box(FL_ENGRAVED_BOX);
+        g_cam->begin();
+
+        Fl_Box* lbl_camera = new Fl_Box(X + 30, Y + 55, 120, 16, "Camera");
+        lbl_camera->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        Fl_Choice* ch_camera = new Fl_Choice(X + 30, Y + 73, 180, 25);
+        ch_camera->add("Andor");
+        ch_camera->add("Xenix");
+        ch_camera->value(0);
+
+        Fl_Box* lbl_exp_time = new Fl_Box(X + 240, Y + 55, 180, 16, "Exposure Time (s)");
+        lbl_exp_time->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        Fl_Float_Input* inp_exp_time = new Fl_Float_Input(X + 240, Y + 73, 180, 25);
+        inp_exp_time->value("0.1");
+
+        Fl_Box* lbl_vert_bin = new Fl_Box(X + 30, Y + 108, 180, 16, "Full Vertical binning");
+        lbl_vert_bin->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        Fl_Choice* ch_vert_bin = new Fl_Choice(X + 30, Y + 126, 180, 25);
+        ch_vert_bin->add("false");
+        ch_vert_bin->add("true");
+        ch_vert_bin->value(0);
+
+        Fl_Group* grp_andor = new Fl_Group(X + 30, Y + 170, 390, 95);
+        grp_andor->box(FL_ENGRAVED_FRAME);
+        Fl_Box* lbl_andor = new Fl_Box(X + 40, Y + 152, 120, 16, "Andor");
+        lbl_andor->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        Fl_Input* inp_andor = new Fl_Input(X + 45, Y + 198, 360, 25, "Status");
+        inp_andor->value("ready");
+        grp_andor->end();
+
+        Fl_Group* grp_xenix = new Fl_Group(X + 30, Y + 285, 390, 95);
+        grp_xenix->box(FL_ENGRAVED_FRAME);
+        Fl_Box* lbl_xenix = new Fl_Box(X + 40, Y + 267, 120, 16, "Xenix");
+        lbl_xenix->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        Fl_Input* inp_xenix = new Fl_Input(X + 45, Y + 313, 360, 25, "Status");
+        inp_xenix->value("ready");
+        grp_xenix->end();
+
+        Fl_Group* grp_andor_settings = new Fl_Group(X + 30, Y + 400, 390, 95);
+        grp_andor_settings->box(FL_ENGRAVED_FRAME);
+        Fl_Box* lbl_andor_settings = new Fl_Box(X + 40, Y + 382, 140, 16, "Andor-settings");
+        lbl_andor_settings->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        Fl_Input* inp_andor_settings = new Fl_Input(X + 45, Y + 428, 360, 25, "Config");
+        inp_andor_settings->value("default");
+        grp_andor_settings->end();
         g_cam->end();
         
         Fl_Group* g_stage = new Fl_Group(X + 5, Y + 30, W - 10, H - 35, "Nanostage");
