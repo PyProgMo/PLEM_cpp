@@ -154,9 +154,15 @@ public:
         Fl_Group* g_spec = new Fl_Group(X + 5, Y + 30, W - 10, H - 35, "Spectrograph");
         g_spec->box(FL_ENGRAVED_BOX);
         g_spec->begin();
-        
+
+        // declare spacing parameters 
+        int spectograph_input_xlength = 120;
+        int spectograph_output_xlength = 120;
+        int spectograph_output_xstart = 160;
+        int ledlengthx = 12;
+
         // Spectrograph Input Group (Left)
-        Fl_Group* grp_spec_input = new Fl_Group(X + 20, Y + 50, 220, 260);
+        Fl_Group* grp_spec_input = new Fl_Group(X + 20, Y + 50, spectograph_input_xlength + 20, 260);
         grp_spec_input->box(FL_ENGRAVED_FRAME);
         Fl_Box* lbl_spec_input = new Fl_Box(X + 20, Y + 35, 100, 20, "Spectrograph Input");
         lbl_spec_input->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
@@ -164,83 +170,83 @@ public:
         
         // Slit Width (Float)
         Fl_Box* lbl_slit = new Fl_Box(X + 30, Y + 60, 100, 16, "Slit Width (µm)");
-        Fl_Float_Input* inp_slit = new Fl_Float_Input(X + 30, Y + 78, 180, 25);
+        Fl_Float_Input* inp_slit = new Fl_Float_Input(X + 30, Y + 78, spectograph_input_xlength, 25);
         inp_slit->value("250.0");
         
         // Grating (Combobox)
-        Fl_Box* lbl_grating = new Fl_Box(X + 30, Y + 110, 100, 16, "Grating");
-        Fl_Choice* ch_grating = new Fl_Choice(X + 30, Y + 128, 180, 25);
+        Fl_Box* lbl_grating = new Fl_Box(X, Y + 110, 100, 16, "Grating");
+        Fl_Choice* ch_grating = new Fl_Choice(X + 30, Y + 128, spectograph_input_xlength, 25);
         ch_grating->add("1200 blz 300l mm");
         ch_grating->add("1200 blz 500l mm");
         ch_grating->add("600 blz 200l mm");
         ch_grating->value(0);
         
         // Central Wavelength (Float)
-        Fl_Box* lbl_cwl = new Fl_Box(X + 30, Y + 160, 150, 16, "Central Wavelength (nm)");
-        Fl_Float_Input* inp_cwl = new Fl_Float_Input(X + 30, Y + 178, 180, 25);
+        Fl_Box* lbl_cwl = new Fl_Box(X + 30, Y + 160, 150, 16, "Central WL (nm)");
+        Fl_Float_Input* inp_cwl = new Fl_Float_Input(X + 30, Y + 178, spectograph_input_xlength, 25);
         inp_cwl->value("950.0");
         
         // Filter (Combobox)
-        Fl_Box* lbl_filter = new Fl_Box(X + 30, Y + 210, 100, 16, "Filter");
-        Fl_Choice* ch_filter = new Fl_Choice(X + 30, Y + 228, 180, 25);
+        Fl_Box* lbl_filter = new Fl_Box(X, Y + 210, 100, 16, "Filter");
+        Fl_Choice* ch_filter = new Fl_Choice(X + 30, Y + 228, spectograph_input_xlength, 25);
         ch_filter->add("Empty");
         ch_filter->add("Longpass 900 nm");
         ch_filter->add("Bandpass 950 nm");
         ch_filter->value(0);
         
         // Shutter (Combobox)
-        Fl_Box* lbl_shutter = new Fl_Box(X + 30, Y + 260, 100, 16, "Shutter");
-        Fl_Choice* ch_shutter = new Fl_Choice(X + 30, Y + 278, 180, 25);
+        Fl_Box* lbl_shutter = new Fl_Box(X, Y + 260, 100, 16, "Shutter");
+        Fl_Choice* ch_shutter = new Fl_Choice(X + 30, Y + 278, spectograph_input_xlength, 25);
         ch_shutter->add("Open");
         ch_shutter->add("Closed");
         ch_shutter->value(0);
         grp_spec_input->end();
 
         // Spectrograph Output Group (Right)
-        Fl_Group* grp_spec_output = new Fl_Group(X + 260, Y + 50, 220, 260);
+        Fl_Group* grp_spec_output = new Fl_Group(X + spectograph_output_xstart + ledlengthx - 2, Y + 50, spectograph_output_xlength, 260);
         grp_spec_output->box(FL_ENGRAVED_FRAME);
-        Fl_Box* lbl_spec_output = new Fl_Box(X + 260, Y + 35, 100, 20, "Spectrograph Output");
+        Fl_Box* lbl_spec_output = new Fl_Box(X + spectograph_output_xstart + ledlengthx, Y + 35, 100, 20, "Spectrograph Output");
         lbl_spec_output->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
         lbl_spec_output->labelfont(FL_HELVETICA_BOLD);
         
         // Slit Width (Read-only)
-        Fl_Box* lbl_slit_out = new Fl_Box(X + 270, Y + 60, 120, 16, "Slit Width (µm)");
-        Fl_Float_Input* out_slit = new Fl_Float_Input(X + 270, Y + 78, 150, 25);
+        Fl_Box* lbl_slit_out = new Fl_Box(X + spectograph_output_xstart, Y + 60, 120, 16, "Slit Width (µm)");
+        Fl_Float_Input* out_slit = new Fl_Float_Input(X + spectograph_output_xstart + ledlengthx, Y + 78, 150, 25);
         out_slit->readonly(1);
         out_slit->value("50.0");
-        Fl_Box* led_slit = new Fl_Box(FL_OVAL_BOX, X + 430, Y + 82, 12, 12, "");
+        Fl_Box* led_slit = new Fl_Box(FL_OVAL_BOX, X + spectograph_output_xstart , Y + 82, 12, 12, "");
         led_slit->color(FL_RED);
         
         // Grating (Read-only)
-        Fl_Box* lbl_grating_out = new Fl_Box(X + 270, Y + 110, 120, 16, "Grating");
-        Fl_Input* out_grating = new Fl_Input(X + 270, Y + 128, 150, 25);
+        Fl_Box* lbl_grating_out = new Fl_Box(X + spectograph_output_xstart - 20 , Y + 110, 120, 16, "Grating");
+        Fl_Input* out_grating = new Fl_Input(X + spectograph_output_xstart + ledlengthx, Y + 128, 150, 25);
         out_grating->readonly(1);
         out_grating->value("1250 blz 150l/mm");
-        Fl_Box* led_grating = new Fl_Box(FL_OVAL_BOX, X + 430, Y + 132, 12, 12, "");
+        Fl_Box* led_grating = new Fl_Box(FL_OVAL_BOX, X + spectograph_output_xstart, Y + 132, 12, 12, "");
         led_grating->color(FL_RED);
         
         // Central Wavelength (Read-only)
-        Fl_Box* lbl_cwl_out = new Fl_Box(X + 270, Y + 160, 150, 16, "Central Wavelength (nm)");
-        Fl_Float_Input* out_cwl = new Fl_Float_Input(X + 270, Y + 178, 150, 25);
+        Fl_Box* lbl_cwl_out = new Fl_Box(X + spectograph_output_xstart - 20, Y + 160, 150, 16, "Central WL (nm)");
+        Fl_Float_Input* out_cwl = new Fl_Float_Input(X + spectograph_output_xstart + ledlengthx, Y + 178, 150, 25);
         out_cwl->readonly(1);
         out_cwl->value("1000.00");
-        Fl_Box* led_cwl = new Fl_Box(FL_OVAL_BOX, X + 430, Y + 182, 12, 12, "");
+        Fl_Box* led_cwl = new Fl_Box(FL_OVAL_BOX, X + spectograph_output_xstart, Y + 182, 12, 12, "");
         led_cwl->color(FL_RED);
         
         // Filter (Read-only)
-        Fl_Box* lbl_filter_out = new Fl_Box(X + 270, Y + 210, 120, 16, "Filter");
-        Fl_Input* out_filter = new Fl_Input(X + 270, Y + 228, 150, 25);
+        Fl_Box* lbl_filter_out = new Fl_Box(X + spectograph_output_xstart - 20, Y + 210, 120, 16, "Filter");
+        Fl_Input* out_filter = new Fl_Input(X + spectograph_output_xstart + ledlengthx, Y + 228, 150, 25);
         out_filter->readonly(1);
         out_filter->value("Longpass 900 nm");
-        Fl_Box* led_filter = new Fl_Box(FL_OVAL_BOX, X + 430, Y + 232, 12, 12, "");
+        Fl_Box* led_filter = new Fl_Box(FL_OVAL_BOX, X + spectograph_output_xstart, Y + 232, 12, 12, "");
         led_filter->color(FL_RED);
         
         // Shutter (Read-only)
-        Fl_Box* lbl_shutter_out = new Fl_Box(X + 270, Y + 260, 120, 16, "Shutter");
-        Fl_Input* out_shutter = new Fl_Input(X + 270, Y + 278, 150, 25);
+        Fl_Box* lbl_shutter_out = new Fl_Box(X + spectograph_output_xstart - 20, Y + 260, 120, 16, "Shutter");
+        Fl_Input* out_shutter = new Fl_Input(X + spectograph_output_xstart + ledlengthx, Y + 278, 150, 25);
         out_shutter->readonly(1);
         out_shutter->value("Closed");
-        Fl_Box* led_shutter = new Fl_Box(FL_OVAL_BOX, X + 430, Y + 282, 12, 12, "");
+        Fl_Box* led_shutter = new Fl_Box(FL_OVAL_BOX, X + spectograph_output_xstart, Y + 282, 12, 12, "");
         led_shutter->color(FL_RED);
         grp_spec_output->end();
 
@@ -273,12 +279,12 @@ public:
         
         Fl_Light_Button* tgl_grating_reset = new Fl_Light_Button(X + 90, Y + 495, 60, 25, "grating");
         tgl_grating_reset->selection_color(fl_rgb_color(255, 204, 0));
-        Fl_Box* led_grating_reset = new Fl_Box(FL_OVAL_BOX, X + 160, Y + 499, 12, 12, "");
+        Fl_Box* led_grating_reset = new Fl_Box(FL_OVAL_BOX, X + 140, Y + 499, 12, 12, "");
         led_grating_reset->color(FL_RED);
         
         Fl_Light_Button* tgl_slit_reset = new Fl_Light_Button(X + 90, Y + 530, 60, 25, "slit");
         tgl_slit_reset->selection_color(fl_rgb_color(255, 204, 0));
-        Fl_Box* led_slit_reset = new Fl_Box(FL_OVAL_BOX, X + 160, Y + 534, 12, 12, "");
+        Fl_Box* led_slit_reset = new Fl_Box(FL_OVAL_BOX, X + 140, Y + 534, 12, 12, "");
         led_slit_reset->color(FL_RED);
         grp_spec_reset->end();
 
@@ -287,43 +293,45 @@ public:
         Fl_Group* g_cam = new Fl_Group(X + 5, Y + 30, W - 10, H - 35, "Camera");
         g_cam->box(FL_ENGRAVED_BOX);
         g_cam->begin();
-
+        
         Fl_Box* lbl_camera = new Fl_Box(X + 30, Y + 55, 120, 16, "Camera");
         lbl_camera->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-        Fl_Choice* ch_camera = new Fl_Choice(X + 30, Y + 73, 180, 25);
+        Fl_Choice* ch_camera = new Fl_Choice(X + 30, Y + 73, 80, 25);
         ch_camera->add("Andor");
         ch_camera->add("Xenics");
         ch_camera->value(0);
 
-        Fl_Box* lbl_exp_time = new Fl_Box(X + 240, Y + 55, 180, 16, "Exposure Time (s)");
+        Fl_Box* lbl_exp_time = new Fl_Box(X + 120, Y + 55, 180, 16, "Exposure Time (s)");
         lbl_exp_time->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-        Fl_Float_Input* inp_exp_time = new Fl_Float_Input(X + 240, Y + 73, 180, 25);
+        Fl_Float_Input* inp_exp_time = new Fl_Float_Input(X + 120, Y + 73, 80, 25);
         inp_exp_time->value("0.1");
 
         Fl_Check_Button* chk_vertical_binning = new Fl_Check_Button(X + 30, Y + 126, 180, 25, "Full Vertical binning");
         chk_vertical_binning->value(0);
 
-        Fl_Group* grp_andor = new Fl_Group(X + 30, Y + 170, 390, 95);
+        int camera_status_xlen = X + 30 + 80;
+
+        Fl_Group* grp_andor = new Fl_Group(X + 30, Y + 170, camera_status_xlen+20, 95);
         grp_andor->box(FL_ENGRAVED_FRAME);
         Fl_Box* lbl_andor = new Fl_Box(X + 40, Y + 152, 120, 16, "Andor");
         lbl_andor->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-        Fl_Input* inp_andor = new Fl_Input(X + 45, Y + 198, 360, 25, "Status");
+        Fl_Input* inp_andor = new Fl_Input(X + 45, Y + 198, camera_status_xlen, 25, "Status");
         inp_andor->value("ready");
         grp_andor->end();
 
-        Fl_Group* grp_xenics = new Fl_Group(X + 30, Y + 285, 390, 95);
+        Fl_Group* grp_xenics = new Fl_Group(X + 30, Y + 285, camera_status_xlen+20, 95);
         grp_xenics->box(FL_ENGRAVED_FRAME);
         Fl_Box* lbl_xenics = new Fl_Box(X + 40, Y + 267, 120, 16, "Xenics");
         lbl_xenics->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-        Fl_Input* inp_xenics = new Fl_Input(X + 45, Y + 313, 360, 25, "Status");
+        Fl_Input* inp_xenics = new Fl_Input(X + 45, Y + 313, camera_status_xlen, 25, "Status");
         inp_xenics->value("ready");
         grp_xenics->end();
 
-        Fl_Group* grp_andor_settings = new Fl_Group(X + 30, Y + 400, 390, 95);
+        Fl_Group* grp_andor_settings = new Fl_Group(X + 30, Y + 400, camera_status_xlen+20, 95);
         grp_andor_settings->box(FL_ENGRAVED_FRAME);
         Fl_Box* lbl_andor_settings = new Fl_Box(X + 40, Y + 382, 140, 16, "Andor-settings");
         lbl_andor_settings->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-        Fl_Input* inp_andor_settings = new Fl_Input(X + 45, Y + 428, 360, 25, "Config");
+        Fl_Input* inp_andor_settings = new Fl_Input(X + 45, Y + 428, camera_status_xlen, 25, "Config");
         inp_andor_settings->value("default");
         grp_andor_settings->end();
         g_cam->end();
