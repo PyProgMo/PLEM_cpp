@@ -8,6 +8,7 @@
 #include <FL/Fl_Light_Button.H>
 #include <FL/Fl_Check_Button.H>
 #include <FL/Fl_Choice.H>
+#include <FL/Fl_Button.H>
 #include <FL/fl_draw.H>
 
 class DragAwareSubTabs : public Fl_Tabs {
@@ -330,6 +331,94 @@ public:
         
         Fl_Group* g_stage = new Fl_Group(X + 5, Y + 30, W - 10, H - 35, "Nanostage");
         g_stage->box(FL_ENGRAVED_BOX);
+        g_stage->begin();
+
+        Fl_Box* lbl_stage_title = new Fl_Box(X + 20, Y + 45, 350, 20, "Piezo Nanostage Control (Range: 0 - 300 " "\xC2\xB5" "m)");
+        lbl_stage_title->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        lbl_stage_title->labelfont(FL_HELVETICA_BOLD);
+
+        // 1. Current Position
+        Fl_Group* grp_stage_pos = new Fl_Group(X + 20, Y + 85, 150, 140);
+        grp_stage_pos->box(FL_ENGRAVED_FRAME);
+        Fl_Box* lbl_stage_pos = new Fl_Box(X + 30, Y + 70, 120, 16, "Current Position");
+        lbl_stage_pos->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        lbl_stage_pos->labelfont(FL_HELVETICA_BOLD);
+
+        Fl_Box* lbl_pos_x = new Fl_Box(X + 30, Y + 100, 20, 25, "X:");
+        Fl_Float_Input* out_pos_x = new Fl_Float_Input(X + 55, Y + 100, 70, 25);
+        out_pos_x->readonly(1); out_pos_x->value("150.000");
+        Fl_Box* lbl_unit_px = new Fl_Box(X + 130, Y + 100, 30, 25, "\xC2\xB5" "m");
+
+        Fl_Box* lbl_pos_y = new Fl_Box(X + 30, Y + 135, 20, 25, "Y:");
+        Fl_Float_Input* out_pos_y = new Fl_Float_Input(X + 55, Y + 135, 70, 25);
+        out_pos_y->readonly(1); out_pos_y->value("150.000");
+        Fl_Box* lbl_unit_py = new Fl_Box(X + 130, Y + 135, 30, 25, "\xC2\xB5" "m");
+
+        Fl_Box* lbl_pos_z = new Fl_Box(X + 30, Y + 170, 20, 25, "Z:");
+        Fl_Float_Input* out_pos_z = new Fl_Float_Input(X + 55, Y + 170, 70, 25);
+        out_pos_z->readonly(1); out_pos_z->value("150.000");
+        Fl_Box* lbl_unit_pz = new Fl_Box(X + 130, Y + 170, 30, 25, "\xC2\xB5" "m");
+        grp_stage_pos->end();
+
+        // 2. Absolute Movement
+        Fl_Group* grp_stage_abs = new Fl_Group(X + 20, Y + 265, 150, 180);
+        grp_stage_abs->box(FL_ENGRAVED_FRAME);
+        Fl_Box* lbl_stage_abs = new Fl_Box(X + 30, Y + 250, 120, 16, "Absolute Move");
+        lbl_stage_abs->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        lbl_stage_abs->labelfont(FL_HELVETICA_BOLD);
+
+        Fl_Box* lbl_abs_x = new Fl_Box(X + 30, Y + 280, 20, 25, "X:");
+        Fl_Float_Input* inp_abs_x = new Fl_Float_Input(X + 55, Y + 280, 70, 25);
+        inp_abs_x->value("150.000");
+        Fl_Box* lbl_unit_ax = new Fl_Box(X + 130, Y + 280, 30, 25, "\xC2\xB5" "m");
+
+        Fl_Box* lbl_abs_y = new Fl_Box(X + 30, Y + 315, 20, 25, "Y:");
+        Fl_Float_Input* inp_abs_y = new Fl_Float_Input(X + 55, Y + 315, 70, 25);
+        inp_abs_y->value("150.000");
+        Fl_Box* lbl_unit_ay = new Fl_Box(X + 130, Y + 315, 30, 25, "\xC2\xB5" "m");
+
+        Fl_Box* lbl_abs_z = new Fl_Box(X + 30, Y + 350, 20, 25, "Z:");
+        Fl_Float_Input* inp_abs_z = new Fl_Float_Input(X + 55, Y + 350, 70, 25);
+        inp_abs_z->value("150.000");
+        Fl_Box* lbl_unit_az = new Fl_Box(X + 130, Y + 350, 30, 25, "\xC2\xB5" "m");
+
+        Fl_Button* btn_move_abs = new Fl_Button(X + 45, Y + 395, 100, 30, "Go To Target");
+        btn_move_abs->color(fl_rgb_color(220, 220, 220));
+        grp_stage_abs->end();
+
+        // 3. Relative Movement (Jog)
+        Fl_Group* grp_stage_rel = new Fl_Group(X + 190, Y + 85, 240, 360);
+        grp_stage_rel->box(FL_ENGRAVED_FRAME);
+        Fl_Box* lbl_stage_rel = new Fl_Box(X + 200, Y + 70, 150, 16, "Relative Move (Jog)");
+        lbl_stage_rel->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        lbl_stage_rel->labelfont(FL_HELVETICA_BOLD);
+
+        Fl_Box* lbl_step_hdr = new Fl_Box(X + 225, Y + 100, 70, 20, "Step (" "\xC2\xB5" "m)");
+        lbl_step_hdr->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE);
+
+        // X Jog
+        Fl_Box* lbl_jog_x = new Fl_Box(X + 200, Y + 130, 20, 25, "X:");
+        Fl_Float_Input* inp_step_x = new Fl_Float_Input(X + 225, Y + 130, 70, 25);
+        inp_step_x->value("1.000");
+        Fl_Button* btn_jog_x_minus = new Fl_Button(X + 310, Y + 125, 40, 35, "-X");
+        Fl_Button* btn_jog_x_plus = new Fl_Button(X + 360, Y + 125, 40, 35, "+X");
+
+        // Y Jog
+        Fl_Box* lbl_jog_y = new Fl_Box(X + 200, Y + 190, 20, 25, "Y:");
+        Fl_Float_Input* inp_step_y = new Fl_Float_Input(X + 225, Y + 190, 70, 25);
+        inp_step_y->value("1.000");
+        Fl_Button* btn_jog_y_minus = new Fl_Button(X + 310, Y + 185, 40, 35, "-Y");
+        Fl_Button* btn_jog_y_plus = new Fl_Button(X + 360, Y + 185, 40, 35, "+Y");
+
+        // Z Jog
+        Fl_Box* lbl_jog_z = new Fl_Box(X + 200, Y + 250, 20, 25, "Z:");
+        Fl_Float_Input* inp_step_z = new Fl_Float_Input(X + 225, Y + 250, 70, 25);
+        inp_step_z->value("1.000");
+        Fl_Button* btn_jog_z_minus = new Fl_Button(X + 310, Y + 245, 40, 35, "-Z");
+        Fl_Button* btn_jog_z_plus = new Fl_Button(X + 360, Y + 245, 40, 35, "+Z");
+        
+        grp_stage_rel->end();
+
         g_stage->end();
         
         Fl_Group* g_img = new Fl_Group(X + 5, Y + 30, W - 10, H - 35, "image");
