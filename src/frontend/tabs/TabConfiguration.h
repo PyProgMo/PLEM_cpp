@@ -305,26 +305,26 @@ public:
 
         Fl_Group* grp_andor = new Fl_Group(X + 30, Y + 170, 390, 95);
         grp_andor->box(FL_ENGRAVED_FRAME);
-        Fl_Box* lbl_andor = new Fl_Box(X + 40, Y + 152, 120, 16, "Andor");
+        Fl_Box* lbl_andor = new Fl_Box(X + 40, Y + 152, 120, 16, "Andor settings");
         lbl_andor->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-        Fl_Input* inp_andor = new Fl_Input(X + 45, Y + 198, 360, 25, "Status");
-        inp_andor->value("ready");
+        Fl_Input* inp_andor = new Fl_Input(X + 45, Y + 198, 360, 25, "Config");
+        inp_andor->value("default");
         grp_andor->end();
 
         Fl_Group* grp_xenics = new Fl_Group(X + 30, Y + 285, 390, 95);
         grp_xenics->box(FL_ENGRAVED_FRAME);
-        Fl_Box* lbl_xenics = new Fl_Box(X + 40, Y + 267, 120, 16, "Xenics");
+        Fl_Box* lbl_xenics = new Fl_Box(X + 40, Y + 267, 120, 16, "Xenics settings");
         lbl_xenics->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-        Fl_Input* inp_xenics = new Fl_Input(X + 45, Y + 313, 360, 25, "Status");
-        inp_xenics->value("ready");
+        Fl_Input* inp_xenics = new Fl_Input(X + 45, Y + 313, 360, 25, "Config");
+        inp_xenics->value("default");
         grp_xenics->end();
 
         Fl_Group* grp_andor_settings = new Fl_Group(X + 30, Y + 400, 390, 95);
         grp_andor_settings->box(FL_ENGRAVED_FRAME);
-        Fl_Box* lbl_andor_settings = new Fl_Box(X + 40, Y + 382, 140, 16, "Andor-settings");
+        Fl_Box* lbl_andor_settings = new Fl_Box(X + 40, Y + 382, 140, 16, "Andor");
         lbl_andor_settings->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-        Fl_Input* inp_andor_settings = new Fl_Input(X + 45, Y + 428, 360, 25, "Config");
-        inp_andor_settings->value("default");
+        Fl_Input* inp_andor_settings = new Fl_Input(X + 45, Y + 428, 360, 25, "Status");
+        inp_andor_settings->value("ready");
         grp_andor_settings->end();
         g_cam->end();
         
