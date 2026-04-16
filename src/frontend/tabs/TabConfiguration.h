@@ -386,38 +386,45 @@ public:
         btn_move_abs->color(fl_rgb_color(220, 220, 220));
         grp_stage_abs->end();
 
-        // 3. Relative Movement (Jog)
-        Fl_Group* grp_stage_rel = new Fl_Group(X + 190, Y + 85, 240, 360);
-        grp_stage_rel->box(FL_ENGRAVED_FRAME);
-        Fl_Box* lbl_stage_rel = new Fl_Box(X + 200, Y + 70, 150, 16, "Relative Move (Jog)");
-        lbl_stage_rel->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-        lbl_stage_rel->labelfont(FL_HELVETICA_BOLD);
+        // 3. Step Sizes
+        Fl_Group* grp_stage_steps = new Fl_Group(X + 190, Y + 85, 240, 140);
+        grp_stage_steps->box(FL_ENGRAVED_FRAME);
+        Fl_Box* lbl_stage_steps = new Fl_Box(X + 200, Y + 70, 150, 16, "Step Sizes (" "\xC2\xB5" "m)");
+        lbl_stage_steps->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        lbl_stage_steps->labelfont(FL_HELVETICA_BOLD);
 
-        Fl_Box* lbl_step_hdr = new Fl_Box(X + 225, Y + 100, 70, 20, "Step (" "\xC2\xB5" "m)");
-        lbl_step_hdr->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE);
-
-        // X Jog
-        Fl_Box* lbl_jog_x = new Fl_Box(X + 200, Y + 130, 20, 25, "X:");
-        Fl_Float_Input* inp_step_x = new Fl_Float_Input(X + 225, Y + 130, 70, 25);
+        Fl_Box* lbl_step_x = new Fl_Box(X + 210, Y + 100, 20, 25, "X:");
+        Fl_Float_Input* inp_step_x = new Fl_Float_Input(X + 240, Y + 100, 70, 25);
         inp_step_x->value("1.000");
-        Fl_Button* btn_jog_x_minus = new Fl_Button(X + 310, Y + 125, 40, 35, "-X");
-        Fl_Button* btn_jog_x_plus = new Fl_Button(X + 360, Y + 125, 40, 35, "+X");
 
-        // Y Jog
-        Fl_Box* lbl_jog_y = new Fl_Box(X + 200, Y + 190, 20, 25, "Y:");
-        Fl_Float_Input* inp_step_y = new Fl_Float_Input(X + 225, Y + 190, 70, 25);
+        Fl_Box* lbl_step_y = new Fl_Box(X + 210, Y + 135, 20, 25, "Y:");
+        Fl_Float_Input* inp_step_y = new Fl_Float_Input(X + 240, Y + 135, 70, 25);
         inp_step_y->value("1.000");
-        Fl_Button* btn_jog_y_minus = new Fl_Button(X + 310, Y + 185, 40, 35, "-Y");
-        Fl_Button* btn_jog_y_plus = new Fl_Button(X + 360, Y + 185, 40, 35, "+Y");
 
-        // Z Jog
-        Fl_Box* lbl_jog_z = new Fl_Box(X + 200, Y + 250, 20, 25, "Z:");
-        Fl_Float_Input* inp_step_z = new Fl_Float_Input(X + 225, Y + 250, 70, 25);
+        Fl_Box* lbl_step_z = new Fl_Box(X + 210, Y + 170, 20, 25, "Z:");
+        Fl_Float_Input* inp_step_z = new Fl_Float_Input(X + 240, Y + 170, 70, 25);
         inp_step_z->value("1.000");
-        Fl_Button* btn_jog_z_minus = new Fl_Button(X + 310, Y + 245, 40, 35, "-Z");
-        Fl_Button* btn_jog_z_plus = new Fl_Button(X + 360, Y + 245, 40, 35, "+Z");
         
-        grp_stage_rel->end();
+        grp_stage_steps->end();
+
+        // 4. Jog Controls (Relative Move)
+        Fl_Group* grp_stage_jog = new Fl_Group(X + 190, Y + 235, 240, 210);
+        grp_stage_jog->box(FL_ENGRAVED_FRAME);
+        Fl_Box* lbl_stage_jog = new Fl_Box(X + 200, Y + 220, 150, 16, "Jog Controls");
+        lbl_stage_jog->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        lbl_stage_jog->labelfont(FL_HELVETICA_BOLD);
+
+        // XY Cross Layout
+        Fl_Button* btn_jog_y_plus = new Fl_Button(X + 250, Y + 255, 40, 40, "+Y");
+        Fl_Button* btn_jog_x_minus = new Fl_Button(X + 210, Y + 295, 40, 40, "-X");
+        Fl_Button* btn_jog_x_plus = new Fl_Button(X + 290, Y + 295, 40, 40, "+X");
+        Fl_Button* btn_jog_y_minus = new Fl_Button(X + 250, Y + 335, 40, 40, "-Y");
+
+        // Z Axis Layout
+        Fl_Button* btn_jog_z_plus = new Fl_Button(X + 360, Y + 255, 40, 40, "+Z");
+        Fl_Button* btn_jog_z_minus = new Fl_Button(X + 360, Y + 335, 40, 40, "-Z");
+        
+        grp_stage_jog->end();
 
         g_stage->end();
         
