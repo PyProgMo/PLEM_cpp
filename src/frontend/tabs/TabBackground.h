@@ -18,6 +18,11 @@ public:
         Fl_Button* btn_record = new Fl_Button(X + 20, Y + 60, 100, 30, "Record BG");
         Fl_Button* btn_save = new Fl_Button(X + 130, Y + 60, 100, 30, "Save BG");
 
+        Fl_Choice* ch_shutter = new Fl_Choice(X + 180, Y + 100, 120, 25, "Shutter during Background:");
+        ch_shutter->add("Closed Shutter");
+        ch_shutter->add("Open Shutter");
+        ch_shutter->value(1); // Open Shutter as default
+
         end();
     }
 };
