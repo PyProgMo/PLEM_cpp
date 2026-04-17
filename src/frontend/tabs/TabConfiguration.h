@@ -9,6 +9,7 @@
 #include <FL/Fl_Check_Button.H>
 #include <FL/Fl_Choice.H>
 #include <FL/Fl_Button.H>
+#include <FL/Fl_Spinner.H>
 #include <FL/fl_draw.H>
 
 class DragAwareSubTabs : public Fl_Tabs {
@@ -289,44 +290,210 @@ public:
         g_cam->box(FL_ENGRAVED_BOX);
         g_cam->begin();
 
-        Fl_Box* lbl_camera = new Fl_Box(X + 30, Y + 55, 120, 16, "Camera");
-        lbl_camera->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-        Fl_Choice* ch_camera = new Fl_Choice(X + 30, Y + 73, 180, 25);
-        ch_camera->add("Andor");
-        ch_camera->add("Xenics");
-        ch_camera->value(0);
+        // Top Row: Camera
+        int cx = X + 80;
+        int cy = Y + 50;
 
-        Fl_Box* lbl_exp_time = new Fl_Box(X + 240, Y + 55, 180, 16, "Exposure Time (s)");
-        lbl_exp_time->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-        Fl_Float_Input* inp_exp_time = new Fl_Float_Input(X + 240, Y + 73, 180, 25);
-        inp_exp_time->value("0.1");
+        Fl_Box* lbl_cam_top = new Fl_Box(cx - 80, cy, 70, 25, "Camera");
+        lbl_cam_top->align(FL_ALIGN_RIGHT | FL_ALIGN_INSIDE);
+        Fl_Input* inp_cam_newton = new Fl_Input(cx, cy, 100, 25);
+        inp_cam_newton->value("Newton");
+        Fl_Box* led_cam1 = new Fl_Box(FL_OVAL_BOX, cx + 120, cy + 2, 20, 20, "");
+        led_cam1->color(FL_RED);
+        Fl_Input* inp_cam_blank = new Fl_Input(cx + 160, cy, 100, 25);
+        inp_cam_blank->value("");
 
-        Fl_Check_Button* chk_vertical_binning = new Fl_Check_Button(X + 30, Y + 126, 180, 25, "Full Vertical binning");
-        chk_vertical_binning->value(0);
+        // Row 2: Exposure Time
+        cy += 40;
+        Fl_Box* lbl_exp = new Fl_Box(cx - 105, cy, 95, 25, "Exposure Time");
+        lbl_exp->align(FL_ALIGN_RIGHT | FL_ALIGN_INSIDE);
+        Fl_Float_Input* inp_exp = new Fl_Float_Input(cx, cy, 100, 25);
+        inp_exp->value("0.20");
+        Fl_Box* led_cam2 = new Fl_Box(FL_OVAL_BOX, cx + 120, cy + 2, 20, 20, "");
+        led_cam2->color(FL_RED);
+        Fl_Float_Input* inp_exp2 = new Fl_Float_Input(cx + 160, cy, 100, 25);
+        inp_exp2->value("0.00");
 
-        Fl_Group* grp_andor = new Fl_Group(X + 30, Y + 170, 390, 95);
-        grp_andor->box(FL_ENGRAVED_FRAME);
-        Fl_Box* lbl_andor = new Fl_Box(X + 40, Y + 152, 120, 16, "Andor settings");
-        lbl_andor->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-        Fl_Input* inp_andor = new Fl_Input(X + 45, Y + 198, 360, 25, "Config");
-        inp_andor->value("default");
-        grp_andor->end();
+        // Row 3: Binning
+        cy += 40;
+        Fl_Button* btn_binning = new Fl_Button(cx - 30, cy, 130, 25, "Full Vertical Binning");
+        btn_binning->box(FL_UP_BOX);
+        Fl_Box* led_cam3 = new Fl_Box(FL_OVAL_BOX, cx + 120, cy + 2, 20, 20, "");
+        led_cam3->color(FL_RED);
 
-        Fl_Group* grp_xenics = new Fl_Group(X + 30, Y + 285, 390, 95);
-        grp_xenics->box(FL_ENGRAVED_FRAME);
-        Fl_Box* lbl_xenics = new Fl_Box(X + 40, Y + 267, 120, 16, "Xenics settings");
-        lbl_xenics->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-        Fl_Input* inp_xenics = new Fl_Input(X + 45, Y + 313, 360, 25, "Config");
-        inp_xenics->value("default");
-        grp_xenics->end();
+        // Sub Tabs
+        cy += 45;
+        DragAwareSubTabs* cam_tabs = new DragAwareSubTabs(X + 25, cy, W - 50, H - cy - 15);
+        cam_tabs->begin();
 
-        Fl_Group* grp_andor_settings = new Fl_Group(X + 30, Y + 400, 390, 95);
-        grp_andor_settings->box(FL_ENGRAVED_FRAME);
-        Fl_Box* lbl_andor_settings = new Fl_Box(X + 40, Y + 382, 140, 16, "Andor");
-        lbl_andor_settings->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-        Fl_Input* inp_andor_settings = new Fl_Input(X + 45, Y + 428, 360, 25, "Status");
-        inp_andor_settings->value("ready");
-        grp_andor_settings->end();
+        // Andor tab
+        Fl_Group* t_andor = new Fl_Group(X + 25, cy + 25, W - 50, H - cy - 40, "Andor");
+        t_andor->box(FL_ENGRAVED_BOX);
+        t_andor->begin();
+
+        int ax = X + 60;
+        int ay = cy + 45;
+
+        Fl_Box* lbl_hbin = new Fl_Box(ax, ay, 60, 25, "HBinning");
+        lbl_hbin->align(FL_ALIGN_RIGHT | FL_ALIGN_INSIDE);
+        Fl_Input* inp_hbin = new Fl_Input(ax + 70, ay, 100, 25);
+        inp_hbin->value("1x");
+        Fl_Box* led_hbin = new Fl_Box(FL_OVAL_BOX, ax + 185, ay + 2, 20, 20, "");
+        led_hbin->color(FL_RED);
+
+        // Group 1 in Andor
+        ay += 40;
+        Fl_Group* grp_andor1 = new Fl_Group(ax - 20, ay, 280, 130);
+        grp_andor1->box(FL_ENGRAVED_FRAME);
+        grp_andor1->begin();
+
+        int gy = ay + 15;
+        Fl_Box* lbl_adchan = new Fl_Box(ax, gy, 60, 25, "ADchannel");
+        lbl_adchan->align(FL_ALIGN_RIGHT | FL_ALIGN_INSIDE);
+        Fl_Spinner* spn_adchan = new Fl_Spinner(ax + 70, gy, 50, 25);
+        spn_adchan->value(0);
+        Fl_Box* led_adchan = new Fl_Box(FL_OVAL_BOX, ax + 140, gy + 2, 20, 20, "");
+        led_adchan->color(FL_RED);
+
+        gy += 35;
+        Fl_Box* lbl_hss = new Fl_Box(ax, gy, 60, 25, "HSSpeed 2");
+        lbl_hss->align(FL_ALIGN_RIGHT | FL_ALIGN_INSIDE);
+        Fl_Spinner* spn_hss = new Fl_Spinner(ax + 70, gy, 50, 25);
+        spn_hss->value(0);
+        Fl_Box* led_hss = new Fl_Box(FL_OVAL_BOX, ax + 140, gy + 2, 20, 20, "");
+        led_hss->color(FL_RED);
+        Fl_Input* inp_hss = new Fl_Input(ax + 175, gy, 40, 25);
+        inp_hss->value("0");
+        Fl_Box* lbl_hz = new Fl_Box(ax + 215, gy, 30, 25, "Mhz");
+        lbl_hz->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+
+        gy += 35;
+        Fl_Box* lbl_pre = new Fl_Box(ax, gy, 60, 25, "pre-amp");
+        lbl_pre->align(FL_ALIGN_RIGHT | FL_ALIGN_INSIDE);
+        Fl_Spinner* spn_pre = new Fl_Spinner(ax + 70, gy, 50, 25);
+        spn_pre->value(0);
+        Fl_Box* led_pre = new Fl_Box(FL_OVAL_BOX, ax + 140, gy + 2, 20, 20, "");
+        led_pre->color(FL_RED);
+        Fl_Input* inp_pre  = new Fl_Input(ax + 175, gy, 40, 25);
+        inp_pre->value("0");
+        Fl_Box* lbl_bx = new Fl_Box(ax + 215, gy, 20, 25, "x");
+        lbl_bx->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+
+        grp_andor1->end();
+
+        // Group 2 in Andor
+        ay += 140;
+        Fl_Group* grp_andor2 = new Fl_Group(ax - 15, ay, 200, 50);
+        grp_andor2->box(FL_ENGRAVED_FRAME);
+        grp_andor2->begin();
+        Fl_Box* lbl_center = new Fl_Box(ax-5, ay+12, 40, 25, "center");
+        Fl_Input* inp_center = new Fl_Input(ax+40, ay+12, 40, 25);
+        inp_center->value("102");
+        Fl_Box* lbl_height = new Fl_Box(ax+90, ay+12, 40, 25, "height");
+        Fl_Input* inp_height = new Fl_Input(ax+135, ay+12, 40, 25);
+        inp_height->value("50");
+        inp_height->deactivate();
+        lbl_height->deactivate();
+        grp_andor2->end();
+
+        // Lower elements in Andor
+        ay += 65;
+        Fl_Box* lbl_idus = new Fl_Box(ax-10, ay, 120, 15, "iDus Type");
+        lbl_idus->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        Fl_Choice* ch_idus = new Fl_Choice(ax-10, ay+15, 170, 25);
+        ch_idus->add("Standard EMCCD gain");
+        ch_idus->value(0);
+        Fl_Input* inp_idus2 = new Fl_Input(ax+170, ay+15, 30, 25);
+        inp_idus2->value("0");
+
+        Fl_Box* lbl_dll = new Fl_Box(ax+210, ay, 80, 15, "DLL error code");
+        lbl_dll->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        Fl_Input* inp_dll = new Fl_Input(ax+210, ay+15, 50, 25);
+        inp_dll->value("0");
+
+        t_andor->end();
+
+        // Xenics tab
+        Fl_Group* t_xenics = new Fl_Group(X + 25, cy + 25, W - 50, H - cy - 40, "Xenics");
+        t_xenics->box(FL_ENGRAVED_BOX);
+        t_xenics->hide();
+        t_xenics->begin();
+
+        int xx = X + 60;
+        int xy = cy + 45;
+
+        Fl_Box* lbl_x_width = new Fl_Box(xx, xy, 100, 25, "width");
+        lbl_x_width->align(FL_ALIGN_RIGHT | FL_ALIGN_INSIDE);
+        Fl_Input* inp_x_width = new Fl_Input(xx + 110, xy, 100, 25);
+        inp_x_width->value("320");
+        
+        xy += 35;
+        Fl_Box* lbl_x_height = new Fl_Box(xx, xy, 100, 25, "height");
+        lbl_x_height->align(FL_ALIGN_RIGHT | FL_ALIGN_INSIDE);
+        Fl_Input* inp_x_height = new Fl_Input(xx + 110, xy, 100, 25);
+        inp_x_height->value("256");
+
+        xy += 35;
+        Fl_Box* lbl_x_time = new Fl_Box(xx, xy, 100, 25, "time");
+        lbl_x_time->align(FL_ALIGN_RIGHT | FL_ALIGN_INSIDE);
+        Fl_Float_Input* inp_x_time = new Fl_Float_Input(xx + 110, xy, 100, 25);
+        inp_x_time->value("0.05");
+
+        xy += 35;
+        Fl_Box* lbl_x_temp = new Fl_Box(xx, xy, 100, 25, "temperature");
+        lbl_x_temp->align(FL_ALIGN_RIGHT | FL_ALIGN_INSIDE);
+        Fl_Float_Input* inp_x_temp = new Fl_Float_Input(xx + 110, xy, 100, 25);
+        inp_x_temp->value("20.0");
+        inp_x_temp->readonly(1);
+
+        xy += 35;
+        Fl_Box* lbl_x_tempset = new Fl_Box(xx - 20, xy, 120, 25, "temp-setpoint");
+        lbl_x_tempset->align(FL_ALIGN_RIGHT | FL_ALIGN_INSIDE);
+        Fl_Float_Input* inp_x_tempset = new Fl_Float_Input(xx + 110, xy, 100, 25);
+        inp_x_tempset->value("20.0");
+
+        t_xenics->end();
+
+        // Andor-settings tab
+        Fl_Group* t_andor_set = new Fl_Group(X + 25, cy + 25, W - 50, H - cy - 40, "Andor-settings");
+        t_andor_set->box(FL_ENGRAVED_BOX);
+        t_andor_set->hide();
+        t_andor_set->begin();
+
+        int as_x = X + 60;
+        int as_y = cy + 45;
+
+        // Temperatures (Newton, iDus, Clara)
+        Fl_Box* lbl_newton = new Fl_Box(as_x, as_y, 120, 25, "Newton Temp.");
+        lbl_newton->align(FL_ALIGN_RIGHT | FL_ALIGN_INSIDE);
+        Fl_Float_Input* inp_newton_temp = new Fl_Float_Input(as_x + 130, as_y, 80, 25);
+        inp_newton_temp->readonly(1);
+        inp_newton_temp->value("0.0");
+
+        as_y += 35;
+        Fl_Box* lbl_idus_temp_lbl = new Fl_Box(as_x, as_y, 120, 25, "iDus Temp.");
+        lbl_idus_temp_lbl->align(FL_ALIGN_RIGHT | FL_ALIGN_INSIDE);
+        Fl_Float_Input* inp_idus_temp = new Fl_Float_Input(as_x + 130, as_y, 80, 25);
+        inp_idus_temp->readonly(1);
+        inp_idus_temp->value("0.0");
+
+        as_y += 35;
+        Fl_Box* lbl_clara = new Fl_Box(as_x, as_y, 120, 25, "Clara Temp.");
+        lbl_clara->align(FL_ALIGN_RIGHT | FL_ALIGN_INSIDE);
+        Fl_Float_Input* inp_clara_temp = new Fl_Float_Input(as_x + 130, as_y, 80, 25);
+        inp_clara_temp->readonly(1);
+        inp_clara_temp->value("0.0");
+
+        // detector-warmup
+        as_y += 45;
+        Fl_Light_Button* btn_warmup = new Fl_Light_Button(as_x + 30, as_y, 150, 25, "detector-warmup");
+        btn_warmup->selection_color(FL_GREEN);
+        btn_warmup->value(1); // Set True as default
+
+        t_andor_set->end();
+
+        cam_tabs->end();
+
         g_cam->end();
         
         Fl_Group* g_stage = new Fl_Group(X + 5, Y + 30, W - 10, H - 35, "Nanostage");
