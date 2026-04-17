@@ -80,7 +80,7 @@ public:
         
         // Right Bottom (Controls)
         int rbw = W - lw;          // Total right bottom width
-        int tab_w = rbw * 4 / 5;   // Tabs get 80% of horizontal space
+        int tab_w = rbw * 6 / 7;   // Tabs get 80% of horizontal space
         int laser_w = rbw - tab_w; // Laser controls get 20%
         
         Fl_Group* bot_grp = new Fl_Group(lw, rth, rbw, H - rth);
