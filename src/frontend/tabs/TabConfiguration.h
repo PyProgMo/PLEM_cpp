@@ -591,6 +591,13 @@ public:
         Fl_Button* btn_jog_z_plus = new Fl_Button(X + 360, Y + 255, 40, 40, "+Z");
         Fl_Button* btn_jog_z_minus = new Fl_Button(X + 360, Y + 335, 40, 40, "-Z");
         
+        Fl_Button* btn_cancel_move = new Fl_Button(X + 220, Y + 395, 80, 30, "Cancel");
+        btn_cancel_move->color(fl_rgb_color(220, 80, 80));
+        
+        Fl_Box* led_moving = new Fl_Box(FL_OVAL_BOX, X + 350, Y + 402, 16, 16, "moving");
+        led_moving->color(FL_DARK_GREEN); // Default off
+        led_moving->align(FL_ALIGN_RIGHT);
+        
         grp_stage_jog->end();
 
         g_stage->end();
