@@ -11,6 +11,7 @@
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Spinner.H>
 #include <FL/fl_draw.H>
+#include "LedButton.h"
 
 class DragAwareSubTabs : public Fl_Tabs {
 public:
@@ -604,6 +605,122 @@ public:
         
         Fl_Group* g_img = new Fl_Group(X + 5, Y + 30, W - 10, H - 35, "image");
         g_img->box(FL_ENGRAVED_BOX);
+        g_img->begin();
+        
+        int ix = X + 80;
+        int iy = Y + 80;
+        
+        // --- Magnification Section ---
+        Fl_Box* lbl_mag = new Fl_Box(ix, iy, 120, 25, "magnification");
+        lbl_mag->align(FL_ALIGN_RIGHT | FL_ALIGN_INSIDE);
+        
+        Fl_Float_Input* inp_mag = new Fl_Float_Input(ix + 130, iy, 70, 25);
+        inp_mag->value("83.3333");
+        
+        Fl_Box* lbl_mag_x = new Fl_Box(ix + 205, iy, 15, 25, "x");
+        lbl_mag_x->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        
+        LedButton* btn_mag = new LedButton(ix + 230, iy, 120, 25, "magnification");
+
+        // --- Image-Laser-Position Group ---
+        iy += 60;
+        Fl_Box* lbl_ilp = new Fl_Box(ix - 50, iy - 10, 160, 20, "image-laser-position");
+        lbl_ilp->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+
+        Fl_Group* grp_ilp = new Fl_Group(ix - 50, iy + 10, 250, 90);
+        grp_ilp->box(FL_ENGRAVED_FRAME);
+        grp_ilp->begin();
+        
+        int img_gx = ix - 40;
+        int img_gy = iy + 25;
+        
+        Fl_Box* lbl_lx = new Fl_Box(img_gx, img_gy, 120, 25, "laser-x-position");
+        lbl_lx->align(FL_ALIGN_RIGHT | FL_ALIGN_INSIDE);
+        Fl_Spinner* spn_lx = new Fl_Spinner(img_gx + 130, img_gy, 70, 25);
+        spn_lx->value(520);
+        spn_lx->maximum(10000);
+        
+        img_gy += 35;
+        Fl_Box* lbl_ly = new Fl_Box(img_gx, img_gy, 120, 25, "laser-y-position");
+        lbl_ly->align(FL_ALIGN_RIGHT | FL_ALIGN_INSIDE);
+        Fl_Spinner* spn_ly = new Fl_Spinner(img_gx + 130, img_gy, 70, 25);
+        spn_ly->value(696);
+        spn_ly->maximum(10000);
+        
+        grp_ilp->end();
+        
+        // Associated switches to the right of image-laser-position
+        LedButton* btn_laser_zero = new LedButton(ix + 230, iy + 45, 120, 25, "laser-is-zero");
+        LedButton* btn_glue = new LedButton(ix + 230, iy + 85, 150, 25, "glue scaling\nto image");
+
+        // --- Pixel Scaling Group ---
+        iy += 140;
+        Fl_Box* lbl_ps = new Fl_Box(ix - 50, iy - 10, 120, 20, "Pixel Scaling");
+        lbl_ps->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        
+        Fl_Group* grp_ps = new Fl_Group(ix - 50, iy + 10, 250, 250);
+        grp_ps->box(FL_ENGRAVED_FRAME);
+        grp_ps->begin();
+        
+        int px1 = ix - 40;
+        int px2 = ix + 60;
+        int py = iy + 20;
+        
+        // row 1: first x / first y labels
+        Fl_Box* lbl_fx = new Fl_Box(px1, py, 90, 15, "first x");
+        lbl_fx->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        Fl_Box* lbl_fy = new Fl_Box(px2, py, 90, 15, "first y");
+        lbl_fy->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        
+        // row 1 inputs
+        py += 15;
+        Fl_Float_Input* inp_fx = new Fl_Float_Input(px1, py, 70, 25);
+        inp_fx->value("498.805");
+        Fl_Int_Input* inp_fy = new Fl_Int_Input(px2, py, 70, 25);
+        inp_fy->value("0");
+        
+        // row 2: size x / size y labels
+        py += 35;
+        Fl_Box* lbl_sx = new Fl_Box(px1, py, 90, 15, "size x");
+        lbl_sx->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        Fl_Box* lbl_sy = new Fl_Box(px2, py, 90, 15, "size y");
+        lbl_sy->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+
+        // row 2 inputs
+        py += 15;
+        Fl_Int_Input* inp_sx = new Fl_Int_Input(px1, py, 70, 25);
+        inp_sx->value("1024");
+        Fl_Int_Input* inp_sy = new Fl_Int_Input(px2, py, 70, 25);
+        inp_sy->value("1");
+
+        // row 3: deltax / deltay labels
+        py += 35;
+        Fl_Box* lbl_dx = new Fl_Box(px1, py, 90, 15, "deltax");
+        lbl_dx->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        Fl_Box* lbl_dy = new Fl_Box(px2, py, 90, 15, "deltay");
+        lbl_dy->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+
+        // row 3 inputs
+        py += 15;
+        Fl_Float_Input* inp_dx = new Fl_Float_Input(px1, py, 70, 25);
+        inp_dx->value("0.274766");
+        Fl_Float_Input* inp_dy = new Fl_Float_Input(px2, py, 70, 25);
+        inp_dy->value("256");
+
+        // row 4: unit
+        py += 45;
+        Fl_Box* lbl_unit = new Fl_Box(px1, py, 40, 25, "unit");
+        lbl_unit->align(FL_ALIGN_RIGHT | FL_ALIGN_INSIDE);
+        Fl_Input* inp_unit = new Fl_Input(px1 + 45, py, 60, 25);
+        inp_unit->value("nm");
+        
+        grp_ps->end();
+        
+        // Indicator to the right of Pixel Scaling
+        Fl_Box* led_ps = new Fl_Box(FL_OVAL_BOX, ix + 230, iy + 120, 20, 20, "pixel scaling");
+        led_ps->color(FL_GREEN);
+        led_ps->align(FL_ALIGN_RIGHT);
+        
         g_img->end();
         
         subtabs->end();
