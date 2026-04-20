@@ -22,6 +22,78 @@ public:
     }
 };
 
+class CoordinateGraph : public Fl_Widget {
+    int num_ticks_x;
+    int num_ticks_y;
+    float start_x, end_x;
+    float start_y, end_y;
+    float cover_start_x, cover_end_x;
+    float cover_start_y, cover_end_y;
+public:
+    CoordinateGraph(int X, int Y, int W, int H, const char* L=0) : Fl_Widget(X,Y,W,H,L) {
+        num_ticks_x = 5;
+        num_ticks_y = 5;
+        start_x = 0.0f; end_x = 300.0f;
+        start_y = 0.0f; end_y = 300.0f;
+        cover_start_x = 50.0f; cover_end_x = 250.0f; // Mock coverage
+        cover_start_y = 50.0f; cover_end_y = 250.0f;
+    }
+    void draw() override {
+        // Draw background
+        fl_color(FL_BLACK);
+        fl_rectf(x(), y(), w(), h());
+        
+        int pad_l = 30; // padding left for Y ticks
+        int pad_b = 20; // padding bottom for X ticks
+        int plot_x = x() + pad_l;
+        int plot_y = y() + 15;
+        int plot_w = w() - pad_l - 15;
+        int plot_h = h() - pad_b - 15;
+
+        // Draw Mock Covered area to highlight stage coverage
+        fl_color(fl_rgb_color(0, 60, 120)); // Dim blue for coverage highlight
+        float cx1 = plot_x + (cover_start_x - start_x) / (end_x - start_x) * plot_w;
+        float cw = (cover_end_x - cover_start_x) / (end_x - start_x) * plot_w;
+        float ch = (cover_end_y - cover_start_y) / (end_y - start_y) * plot_h;
+        float cy1 = plot_y + plot_h - ((cover_start_y - start_y) / (end_y - start_y) * plot_h) - ch;
+        fl_rectf(cx1, cy1, cw, ch);
+
+        fl_color(FL_WHITE);
+        fl_line_style(FL_SOLID, 1);
+        // Draw Axis
+        fl_line(plot_x, plot_y - 5, plot_x, plot_y + plot_h); // Y axis Main line
+        fl_line(plot_x, plot_y + plot_h, plot_x + plot_w + 5, plot_y + plot_h); // X axis Main line
+        
+        // Thin and small font
+        fl_font(FL_HELVETICA, 10);
+        
+        // Draw X ticks (Start, End, and dynamic intermediates)
+        for (int i = 0; i < num_ticks_x; ++i) {
+            float t = (float)i / (num_ticks_x - 1);
+            int tx = plot_x + t * plot_w;
+            fl_line(tx, plot_y + plot_h, tx, plot_y + plot_h + 4); // Tick mark
+            char buf[32];
+            sprintf(buf, "%.0f", start_x + t * (end_x - start_x));
+            fl_draw(buf, tx - 8, plot_y + plot_h + 14);
+        }
+
+        // Draw Y ticks (Start, End, and dynamic intermediates)
+        for (int i = 0; i < num_ticks_y; ++i) {
+            float t = (float)i / (num_ticks_y - 1);
+            int ty = plot_y + plot_h - t * plot_h;
+            fl_line(plot_x - 4, ty, plot_x, ty); // Tick mark
+            char buf[32];
+            sprintf(buf, "%.0f", start_y + t * (end_y - start_y));
+            fl_draw(buf, x() + 5, ty + 3);
+        }
+        
+        // Axis Labels
+        fl_color(FL_LIGHT2);
+        fl_draw("X", plot_x + plot_w - 5, plot_y + plot_h - 5);
+        fl_draw("Y", x() + 15, plot_y - 5);
+    }
+};
+
 class TabAutoStage : public Fl_Group {
 public:
     TabAutoStage(int X, int Y, int W, int H, const char* L = 0) : Fl_Group(X, Y, W, H, L) {
@@ -178,24 +250,13 @@ public:
         Fl_Group* grp_graph = new Fl_Group(cyc_x, g_y + 20, cyc_w, 160);
         grp_graph->box(FL_ENGRAVED_FRAME);
         
-        // Dummy block to represent graph area
-        const int plot_x = cyc_x + 24;
-        const int plot_y = g_y + 34;
-        const int plot_w = cyc_w - 80;
-        const int plot_h = 136;
-        Fl_Box* plot_area = new Fl_Box(FL_FLAT_BOX, plot_x, plot_y, plot_w, plot_h, "");
-        plot_area->color(FL_BLACK); // Graph is dark in the preview
+        int plot_x = cyc_x + 24;
+        int plot_y = g_y + 34;
+        int plot_w = cyc_w - 80;
+        int plot_h = 136;
         
-        Fl_Box* axis_y = new Fl_Box(FL_FLAT_BOX, plot_x + 8, plot_y + 8, 2, plot_h - 16, "");
-        axis_y->color(FL_WHITE);
-        Fl_Box* axis_x = new Fl_Box(FL_FLAT_BOX, plot_x + 8, plot_y + plot_h - 10, plot_w - 16, 2, "");
-        axis_x->color(FL_WHITE);
-        Fl_Box* axis_y_lbl = new Fl_Box(plot_x - 16, plot_y + 4, 12, 20, "Y");
-        axis_y_lbl->labelcolor(FL_WHITE);
-        axis_y_lbl->labelsize(11);
-        Fl_Box* axis_x_lbl = new Fl_Box(plot_x + plot_w - 10, plot_y + plot_h - 8, 12, 20, "X");
-        axis_x_lbl->labelcolor(FL_WHITE);
-        axis_x_lbl->labelsize(11);
+        // Instantiate the custom Fancy Coordinate Graph
+        CoordinateGraph* coord_graph = new CoordinateGraph(plot_x, plot_y, plot_w, plot_h, "");
         
         // Dummy legend
         Fl_Box* grad = new Fl_Box(FL_FLAT_BOX, cyc_x + cyc_w - 32, g_y + 44, 12, 120, "");
