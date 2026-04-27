@@ -5,10 +5,96 @@
 #include <FL/Fl_Text_Display.H>
 #include <FL/Fl_Text_Buffer.H>
 #include <FL/Fl_Output.H>
+#include <FL/Fl_Button.H>
+#include <FL/Fl_Browser.H>
+#include "../../../include/ErrorLogger.h"
+#include "../../../include/ErrorCodes.h"
+#include <thread>
+#include <chrono>
 
 class TabAdmin : public Fl_Group {
+private:
+    Fl_Check_Button* chk_log_errors;
+    Fl_Text_Buffer* buf_current;
+    Fl_Text_Display* out_current;
+    Fl_Text_Buffer* buf_last;
+    Fl_Text_Display* out_last;
+    Fl_Text_Buffer* buf_time;
+    Fl_Text_Display* out_time;
+    Fl_Browser* error_history_list;
+    bool updateThreadRunning;
+    std::thread* updateThread;
+
+    // Callback to toggle error logging
+    static void LoggingToggleCallback(Fl_Widget* w, void* data) {
+        TabAdmin* tab = static_cast<TabAdmin*>(data);
+        Fl_Check_Button* chk = static_cast<Fl_Check_Button*>(w);
+        ErrorLogger::GetInstance().SetLoggingEnabled(chk->value() != 0);
+    }
+
+    // Callback for clear history button
+    static void ClearHistoryCallback(Fl_Widget* w, void* data) {
+        TabAdmin* tab = static_cast<TabAdmin*>(data);
+        ErrorLogger::GetInstance().ClearErrorHistory();
+        tab->UpdateErrorDisplay();
+    }
+
+    // Update error display
+    void UpdateErrorDisplay() {
+        auto lastError = ErrorLogger::GetInstance().GetLastError();
+        
+        // Update last error
+        if (!lastError.second.empty()) {
+            buf_last->text(lastError.second.c_str());
+            buf_time->text(lastError.first.c_str());
+        } else {
+            buf_last->text("None.");
+            buf_time->text("");
+        }
+
+        // Update current error (same as last for now, can be extended)
+        buf_current->text(lastError.second.empty() ? "System operational. No active errors." 
+                                                     : lastError.second.c_str());
+
+        // Update error history list
+        UpdateErrorHistoryList();
+    }
+
+    // Update error history list
+    void UpdateErrorHistoryList() {
+        auto history = ErrorLogger::GetInstance().GetErrorHistory(20);
+        error_history_list->clear();
+        
+        for (const auto& entry : history) {
+            std::string line = "[" + entry.first + "] " + entry.second;
+            error_history_list->add(line.c_str());
+        }
+        
+        // Scroll to bottom to show latest
+        if (error_history_list->size() > 0) {
+            error_history_list->bottomline(error_history_list->size());
+        }
+    }
+
+    // Background thread for updating error display
+    void ErrorUpdateThread() {
+        while (updateThreadRunning) {
+            UpdateErrorDisplay();
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        }
+    }
+
+    // Static thread function wrapper
+    static void* ThreadWrapper(void* data) {
+        TabAdmin* tab = static_cast<TabAdmin*>(data);
+        tab->ErrorUpdateThread();
+        return nullptr;
+    }
+
 public:
-    TabAdmin(int X, int Y, int W, int H, const char* L = 0) : Fl_Group(X, Y, W, H, L) {
+    TabAdmin(int X, int Y, int W, int H, const char* L = 0) 
+        : Fl_Group(X, Y, W, H, L), updateThreadRunning(true), updateThread(nullptr) {
+        
         int cx = X + 20;
         int cy = Y + 40; // Push down slightly for the group label
 
@@ -20,10 +106,17 @@ public:
         int gx = cx + 20;
         int gy = cy + 20;
 
-        // Checkbox to log errors
-        Fl_Check_Button* chk_log_errors = new Fl_Check_Button(gx, gy, 150, 25, "Log errors to database/file");
+        // ===== LOGGING CONTROL =====
+        chk_log_errors = new Fl_Check_Button(gx, gy, 200, 25, "Log errors to file");
+        chk_log_errors->value(1); // Default enabled
+        chk_log_errors->callback(LoggingToggleCallback, this);
+        ErrorLogger::GetInstance().SetLoggingEnabled(true);
         
-        gy += 40;
+        // Clear history button
+        Fl_Button* btn_clear = new Fl_Button(gx + 210, gy, 100, 25, "Clear History");
+        btn_clear->callback(ClearHistoryCallback, this);
+        
+        gy += 35;
         
         // --- Current Error Display (Continuous) ---
         Fl_Box* lbl_current = new Fl_Box(gx, gy, 250, 20, "Current Error (Continuously Updating):");
@@ -31,39 +124,84 @@ public:
         lbl_current->labelfont(FL_HELVETICA_BOLD);
         
         gy += 25;
-        Fl_Text_Buffer* buf_current = new Fl_Text_Buffer();
+        buf_current = new Fl_Text_Buffer();
         buf_current->text("System operational. No active errors.");
-        Fl_Text_Display* out_current = new Fl_Text_Display(gx, gy, 430, 150); // 10 lines (~15px each) height
+        out_current = new Fl_Text_Display(gx, gy, 300, 80);
         out_current->buffer(buf_current);
         out_current->color(FL_LIGHT2);
 
-        gy += 165;
+        gy += 95;
         
         // --- Last Error Display ("Snapped") ---
-        Fl_Box* lbl_last = new Fl_Box(gx, gy, 250, 20, "Last Error (Snapped):");
+        Fl_Box* lbl_last = new Fl_Box(gx, gy, 250, 20, "Last Error:");
         lbl_last->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
         lbl_last->labelfont(FL_HELVETICA_BOLD);
         
         // --- Timestamp ---
-        Fl_Box* lbl_time = new Fl_Box(gx + 290, gy, 140, 20, "Timestamp:");
+        Fl_Box* lbl_time = new Fl_Box(gx + 310, gy, 130, 20, "Timestamp:");
         lbl_time->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
         lbl_time->labelfont(FL_HELVETICA_BOLD);
 
         gy += 25;
-        Fl_Text_Buffer* buf_last = new Fl_Text_Buffer();
+        buf_last = new Fl_Text_Buffer();
         buf_last->text("None.");
-        Fl_Text_Display* out_last = new Fl_Text_Display(gx, gy, 280, 150);
+        out_last = new Fl_Text_Display(gx, gy, 300, 80);
         out_last->buffer(buf_last);
         out_last->color(FL_LIGHT2);
 
-        Fl_Text_Buffer* buf_time = new Fl_Text_Buffer();
+        buf_time = new Fl_Text_Buffer();
         buf_time->text("00:00:00.000\nDD.MM.YYYY");
-        Fl_Text_Display* out_time = new Fl_Text_Display(gx + 290, gy, 140, 150);
+        out_time = new Fl_Text_Display(gx + 310, gy, 130, 80);
         out_time->buffer(buf_time);
         out_time->color(FL_LIGHT2);
+
+        gy += 95;
+
+        // --- Error History List ---
+        Fl_Box* lbl_history = new Fl_Box(gx, gy, 300, 20, "Error History (Last 20):");
+        lbl_history->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        lbl_history->labelfont(FL_HELVETICA_BOLD);
+
+        gy += 25;
+        error_history_list = new Fl_Browser(gx, gy, 430, 120);
+        error_history_list->type(FL_MULTI_BROWSER);
+        error_history_list->color(FL_LIGHT2);
+
+        gy += 130;
+
+        // --- Log Directory Info ---
+        Fl_Box* lbl_info = new Fl_Box(gx, gy, 200, 20);
+        std::string logPath = "Log Path: " + ErrorLogger::GetInstance().GetLogDirectory();
+        lbl_info->label(logPath.c_str());
+        lbl_info->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+        lbl_info->labelfont(FL_HELVETICA);
+        lbl_info->labelsize(10);
 
         grp_error->end();
 
         end();
+
+        // Start background update thread
+        updateThread = new std::thread(&TabAdmin::ErrorUpdateThread, this);
+    }
+
+    ~TabAdmin() {
+        updateThreadRunning = false;
+        if (updateThread && updateThread->joinable()) {
+            updateThread->join();
+        }
+        delete updateThread;
+    }
+
+    // Public method to log errors from other components
+    static void ReportError(uint32_t errorCode, const std::string& message, 
+                           const std::string& details = "") {
+        ErrorLogger::GetInstance().LogError(errorCode, message, details);
+    }
+
+    // Convenience method for error reporting
+    static void ReportError(ErrorCodes::ErrorCategory category, uint16_t specificError,
+                           const std::string& message, const std::string& details = "") {
+        ErrorLogger::GetInstance().LogError(category, specificError, message, details);
     }
 };
