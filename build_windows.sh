@@ -19,10 +19,26 @@ if tasklist 2>/dev/null | grep -q "Template.exe"; then
 fi
 
 echo "Building FLTK Template..."
-$COMPILER -std=c++17 -Iinclude -I/mingw64/include src/main.cpp src/backend/DebugConsole.cpp -o build/windows/Template.exe -mwindows -L/mingw64/lib -lfltk_images -lpng -lz -lfltk -lgdi32 -lcomdlg32 -lcomctl32 -lole32 -luuid -lws2_32 -lkernel32 -luser32 -lgdiplus -lshell32 -lwinspool -ladvapi32 -static-libgcc
+$COMPILER -std=c++17 \
+    -Iinclude \
+    -I/mingw64/include \
+    -Istandalone_devices/thorlabs_powermeter/dll \
+    -Istandalone_devices/thorlabs_powermeter/Include \
+    src/main.cpp \
+    src/backend/DebugConsole.cpp \
+    standalone_devices/thorlabs_powermeter/tl100d_reader/src/ThorlabsPM.cpp \
+    -o build/windows/Template.exe \
+    -mwindows \
+    -L/mingw64/lib \
+    -Lstandalone_devices/thorlabs_powermeter/dll \
+    -lTLPM_64 \
+    -lfltk_images -lpng -lz -lfltk -lgdi32 -lcomdlg32 -lcomctl32 -lole32 -luuid -lws2_32 -lkernel32 -luser32 -lgdiplus -lshell32 -lwinspool -ladvapi32 -static-libgcc
 
 if [ -f build/windows/Template.exe ]; then
     echo "Build successful! Executable: build/windows/Template.exe"
+    
+    echo "Copying required DLLs..."
+    cp standalone_devices/thorlabs_powermeter/dll/TLPM_64.dll build/windows/ || true
     
     if [ "$START_AFTER_BUILD" = true ]; then
         echo "Starting application..."

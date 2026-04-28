@@ -2,6 +2,7 @@
 #include <FL/Fl_PNG_Image.H>
 #include "frontend/FrontendConnection.h"
 #include "../include/DebugConsole.h"
+#include "../standalone_devices/thorlabs_powermeter/tl100d_reader/src/ThorlabsPM.h"
 
 int main(int argc, char** argv) {
     Fl::scheme("gtk+"); // Make the GUI look more modern
@@ -24,8 +25,8 @@ int main(int argc, char** argv) {
     DebugConsole debugConsole;
     debugConsole.start();
     
-    // Example: If we had a ThorlabsPM instance here, we would register it like this:
-    // debugConsole.registerComponent("thorlabs", deviceInstance);
+    ThorlabsPM* powermeter = new ThorlabsPM(PMMode::CONSOLE);
+    debugConsole.registerComponent("thorlabs", powermeter);
 
     FrontendConnection* window = new FrontendConnection(1200, 800, "PLEM Multi-Pane Frontend", &debugConsole);
     window->show(argc, argv);
@@ -34,5 +35,6 @@ int main(int argc, char** argv) {
     
     // Cleanup
     debugConsole.stop();
+    delete powermeter;
     return result;
 }
