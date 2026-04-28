@@ -151,7 +151,7 @@ public:
 
         buf_time = new Fl_Text_Buffer();
         buf_time->text("00:00:00.000\nDD.MM.YYYY");
-        out_time = new Fl_Text_Display(gx + 310, gy, 130, 80);
+        out_time = new Fl_Text_Display(gx + 310, gy, 120, 80);
         out_time->buffer(buf_time);
         out_time->color(FL_LIGHT2);
 
@@ -163,7 +163,7 @@ public:
         lbl_history->labelfont(FL_HELVETICA_BOLD);
 
         gy += 25;
-        error_history_list = new Fl_Browser(gx, gy, 430, 120);
+        error_history_list = new Fl_Browser(gx, gy, 430, 360);
         error_history_list->type(FL_MULTI_BROWSER);
         error_history_list->color(FL_LIGHT2);
 
