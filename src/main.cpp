@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
     // Example: If we had a ThorlabsPM instance here, we would register it like this:
     // debugConsole.registerComponent("thorlabs", deviceInstance);
 
-    FrontendConnection* window = new FrontendConnection(1200, 800, "PLEM Multi-Pane Frontend");
+    FrontendConnection* window = new FrontendConnection(1200, 800, "PLEM Multi-Pane Frontend", &debugConsole);
     window->show(argc, argv);
     
     int result = Fl::run();

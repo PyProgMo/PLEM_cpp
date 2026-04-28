@@ -31,6 +31,12 @@ public:
     void unregisterComponent(const std::string& name);
 
     /**
+     * @brief Execute a single command asynchronously or synchronously and return output.
+     * @param line Full command line (e.g. "thorlabs init").
+     */
+    std::string executeCommand(const std::string& line);
+
+    /**
      * @brief Start the background console thread.
      */
     void start();
