@@ -6,18 +6,15 @@
 #include <FL/Fl_Int_Input.H>
 #include <FL/Fl_Input.H>
 #include <FL/Fl_Choice.H>
+#include <FL/Fl_Button.H>
 #include <FL/Fl_Progress.H>
 #include <FL/fl_draw.H>
 #include <FL/Fl_Native_File_Chooser.H>
-#include <vector>
-#include <fstream>
-#include <sstream>
-#include <string>
 #include <chrono>
 #include <thread>
-#include <iomanip>
 #include "../../fbconnector/FBConnector.h"
 #include "../../../include/ErrorLogger.h"
+#include "../../backend/AutoStage.h"
 
 // Custom Fancy Switch for this tab
 class StageToggle : public Fl_Light_Button {
@@ -104,22 +101,23 @@ public:
 
 class TabAutoStage : public Fl_Group {
 private:
-    // Internal coordinate storage (loaded from file or generated from cycle params)
-    std::vector<std::vector<float>> internal_coordinates;
+    // Backend for coordinate management
+    AutoStage autostage_backend;
     
     // UI Elements we need to track
-    Fl_Float_Input* cycle_step[3];
-    Fl_Int_Input* cycle_mod[3];
-    Fl_Float_Input* cycle_range_min[3];
-    Fl_Float_Input* cycle_range_max[3];
+    Fl_Float_Input* cycle_start[3];    // Start position for X, Y, Z
+    Fl_Float_Input* cycle_end[3];      // End position for X, Y, Z
+    Fl_Float_Input* cycle_step[3];     // Step size for X, Y, Z
     
     // Excitation display (live coordinates during motion)
     Fl_Input* excitation_display[2][3];
     
     // Coordinate viewer (shift through loaded coordinates)
-    Fl_Int_Input* coord_spinner[2];  // For shifting (start coord index)
-    Fl_Input* coord_display[3][3];   // 3x3 table showing 3 consecutive coordinates
-    int coord_view_index;            // Current starting index for coordinate display
+    Fl_Int_Input* coord_spinner[2];    // For shifting (start coord index)
+    Fl_Button* coord_shift_up;
+    Fl_Button* coord_shift_down;
+    Fl_Input* coord_display[3][3];     // 3x3 table showing 3 consecutive coordinates
+    int coord_view_index;               // Current starting index for coordinate display
     
     // Statistics display
     Fl_Int_Input* stat_iterator;
@@ -133,137 +131,14 @@ private:
     bool is_running;
     std::chrono::steady_clock::time_point start_time;
 
-    // Helper: Load coordinates from file
-    bool loadCoordinatesFromFile(const std::string& filepath) {
-        std::ifstream file(filepath);
-        if (!file.is_open()) {
-            ErrorLogger::GetInstance().LogError(
-                ErrorCodes::CATEGORY_STAGE, 0x0001,
-                "AutoStage: Failed to load coordinates", 
-                "Could not open file: " + filepath
-            );
-            return false;
-        }
-        
-        internal_coordinates.clear();
-        std::string line;
-        while (std::getline(file, line)) {
-            if (line.empty()) continue;
-            
-            std::vector<float> coord;
-            std::stringstream ss(line);
-            std::string token;
-            while (std::getline(ss, token, ',')) {
-                try {
-                    coord.push_back(std::stof(token));
-                } catch (...) {
-                    ErrorLogger::GetInstance().LogError(
-                        ErrorCodes::CATEGORY_STAGE, 0x0002,
-                        "AutoStage: Invalid coordinate format in file",
-                        "Line: " + line
-                    );
-                    return false;
-                }
-            }
-            
-            if (coord.size() == 3) {
-                internal_coordinates.push_back(coord);
-            }
-        }
-        
-        file.close();
-        
-        // Update coordinate display to show first 3 coordinates
-        coord_view_index = 0;
-        updateCoordinateDisplay();
-        
-        return true;
-    }
-
-    // Helper: Save coordinates to file
-    bool saveCoordinatesToFile(const std::string& filepath) {
-        std::ofstream file(filepath);
-        if (!file.is_open()) {
-            ErrorLogger::GetInstance().LogError(
-                ErrorCodes::CATEGORY_STAGE, 0x0003,
-                "AutoStage: Failed to save coordinates",
-                "Could not open file: " + filepath
-            );
-            return false;
-        }
-        
-        for (const auto& coord : internal_coordinates) {
-            file << std::fixed << std::setprecision(2);
-            file << coord[0] << "," << coord[1] << "," << coord[2] << "\n";
-        }
-        
-        file.close();
-        return true;
-    }
-
-    // Helper: Generate coordinates from cycle parameters
-    void generateCoordinatesFromCycle() {
-        internal_coordinates.clear();
-        
-        try {
-            float step_x = std::stof(cycle_step[0]->value());
-            float step_y = std::stof(cycle_step[1]->value());
-            float step_z = std::stof(cycle_step[2]->value());
-            
-            int mod_x = std::stoi(cycle_mod[0]->value());
-            int mod_y = std::stoi(cycle_mod[1]->value());
-            int mod_z = std::stoi(cycle_mod[2]->value());
-            
-            float range_min_x = std::stof(cycle_range_min[0]->value());
-            float range_max_x = std::stof(cycle_range_max[0]->value());
-            float range_min_y = std::stof(cycle_range_min[1]->value());
-            float range_max_y = std::stof(cycle_range_max[1]->value());
-            float range_min_z = std::stof(cycle_range_min[2]->value());
-            float range_max_z = std::stof(cycle_range_max[2]->value());
-            
-            // Generate all coordinate points
-            for (float x = range_min_x; x <= range_max_x; x += step_x) {
-                for (float y = range_min_y; y <= range_max_y; y += step_y) {
-                    for (float z = range_min_z; z <= range_max_z; z += step_z) {
-                        internal_coordinates.push_back({x, y, z});
-                    }
-                }
-            }
-            
-            coord_view_index = 0;  // Reset viewer to first coordinate
-            updateStatistics();
-            updateCoordinateDisplay();
-        } catch (...) {
-            ErrorLogger::GetInstance().LogError(
-                ErrorCodes::CATEGORY_STAGE, 0x0004,
-                "AutoStage: Invalid cycle parameters"
-            );
-        }
-    }
-
-    // Helper: Update statistics display
-    void updateStatistics() {
-        int total = internal_coordinates.size();
-        stat_total->value(std::to_string(total).c_str());
-        
-        // Estimate time based on dummy measurement time per coordinate (~10 seconds)
-        int estimated_seconds = total * 10;
-        int hours = estimated_seconds / 3600;
-        int minutes = (estimated_seconds % 3600) / 60;
-        int seconds = estimated_seconds % 60;
-        
-        std::string time_str = std::to_string(hours) + "h " + 
-                               std::to_string(minutes) + "m " + 
-                               std::to_string(seconds) + "s";
-        stat_time->value(time_str.c_str());
-    }
-
     // Helper: Update coordinate viewer display (shows 3 consecutive coordinates with 3 decimal places)
     void updateCoordinateDisplay() {
+        const auto& coords = autostage_backend.getCoordinates();
+        
         for (int r = 0; r < 3; r++) {
             int coord_idx = coord_view_index + r;
-            if (coord_idx >= 0 && coord_idx < (int)internal_coordinates.size()) {
-                const auto& coord = internal_coordinates[coord_idx];
+            if (coord_idx >= 0 && coord_idx < (int)coords.size()) {
+                const auto& coord = coords[coord_idx];
                 for (int c = 0; c < 3; c++) {
                     char buf[32];
                     snprintf(buf, sizeof(buf), "%.3f", coord[c]);
@@ -278,17 +153,34 @@ private:
         }
     }
 
+    // Helper: Update statistics display
+    void updateStatistics() {
+        int total = autostage_backend.getCoordinateCount();
+        stat_total->value(std::to_string(total).c_str());
+        
+        // Estimate time in h/m/s format
+        int estimated_seconds = autostage_backend.estimateMeasurementTime(10);
+        int hours = estimated_seconds / 3600;
+        int minutes = (estimated_seconds % 3600) / 60;
+        int seconds = estimated_seconds % 60;
+        
+        std::string time_str = std::to_string(hours) + "h " + 
+                               std::to_string(minutes) + "m " + 
+                               std::to_string(seconds) + "s";
+        stat_time->value(time_str.c_str());
+    }
+
     // Helper: Update excitation display (with 3 decimal places)
     void updateExcitationDisplay(int coord_index) {
-        if (coord_index < 0 || coord_index >= (int)internal_coordinates.size()) {
-            return;
-        }
-        
-        const auto& coord = internal_coordinates[coord_index];
-        for (int i = 0; i < 3; i++) {
+        float x, y, z;
+        if (autostage_backend.getCoordinate(coord_index, x, y, z)) {
             char buf[32];
-            snprintf(buf, sizeof(buf), "%.3f", coord[i]);
-            excitation_display[0][i]->value(buf);
+            snprintf(buf, sizeof(buf), "%.3f", x);
+            excitation_display[0][0]->value(buf);
+            snprintf(buf, sizeof(buf), "%.3f", y);
+            excitation_display[0][1]->value(buf);
+            snprintf(buf, sizeof(buf), "%.3f", z);
+            excitation_display[0][2]->value(buf);
         }
     }
 
@@ -303,7 +195,9 @@ private:
         
         if (chooser.show() == 0) {
             std::string filepath = chooser.filename();
-            if (tab->loadCoordinatesFromFile(filepath)) {
+            if (tab->autostage_backend.loadCoordinatesFromFile(filepath)) {
+                tab->coord_view_index = 0;
+                tab->updateCoordinateDisplay();
                 tab->updateStatistics();
                 ErrorLogger::GetInstance().LogError(
                     ErrorCodes::CATEGORY_STAGE, 0x1000,
@@ -325,7 +219,7 @@ private:
         
         if (chooser.show() == 0) {
             std::string filepath = chooser.filename();
-            if (tab->saveCoordinatesToFile(filepath)) {
+            if (tab->autostage_backend.saveCoordinatesToFile(filepath)) {
                 ErrorLogger::GetInstance().LogError(
                     ErrorCodes::CATEGORY_STAGE, 0x1001,
                     "AutoStage: Coordinates saved successfully",
@@ -335,10 +229,38 @@ private:
         }
     }
 
-    // Callback: Cycle parameter changed
+    // Callback: Cycle parameter changed (generates new coordinate cube)
     static void cycleParamChangedCallback(Fl_Widget* w, void* data) {
         TabAutoStage* tab = static_cast<TabAutoStage*>(data);
-        tab->generateCoordinatesFromCycle();
+        
+        try {
+            float start_x = std::stof(tab->cycle_start[0]->value());
+            float end_x = std::stof(tab->cycle_end[0]->value());
+            float step_x = std::stof(tab->cycle_step[0]->value());
+            
+            float start_y = std::stof(tab->cycle_start[1]->value());
+            float end_y = std::stof(tab->cycle_end[1]->value());
+            float step_y = std::stof(tab->cycle_step[1]->value());
+            
+            float start_z = std::stof(tab->cycle_start[2]->value());
+            float end_z = std::stof(tab->cycle_end[2]->value());
+            float step_z = std::stof(tab->cycle_step[2]->value());
+            
+            if (tab->autostage_backend.generateCoordinatesCube(
+                start_x, end_x, step_x,
+                start_y, end_y, step_y,
+                start_z, end_z, step_z)) {
+                
+                tab->coord_view_index = 0;
+                tab->updateCoordinateDisplay();
+                tab->updateStatistics();
+            }
+        } catch (...) {
+            ErrorLogger::GetInstance().LogError(
+                ErrorCodes::CATEGORY_STAGE, 0x0004,
+                "AutoStage: Invalid cycle parameters"
+            );
+        }
     }
 
     // Callback: Coordinate spinner changed (shift through coordinates)
@@ -348,14 +270,34 @@ private:
         try {
             int new_index = std::stoi(tab->coord_spinner[0]->value());
             if (new_index < 0) new_index = 0;
-            if (new_index >= (int)tab->internal_coordinates.size()) {
-                new_index = std::max(0, (int)tab->internal_coordinates.size() - 1);
+            if (new_index >= (int)tab->autostage_backend.getCoordinateCount()) {
+                new_index = std::max(0, (int)tab->autostage_backend.getCoordinateCount() - 1);
             }
             tab->coord_view_index = new_index;
+            tab->coord_spinner[0]->value(std::to_string(new_index).c_str());
             tab->updateCoordinateDisplay();
         } catch (...) {
             // Ignore invalid input
         }
+    }
+
+    // Callback: Shift coordinate view one step up
+    static void coordinateShiftUpCallback(Fl_Widget* w, void* data) {
+        TabAutoStage* tab = static_cast<TabAutoStage*>(data);
+        int new_index = std::max(0, tab->coord_view_index - 1);
+        tab->coord_view_index = new_index;
+        tab->coord_spinner[0]->value(std::to_string(new_index).c_str());
+        tab->updateCoordinateDisplay();
+    }
+
+    // Callback: Shift coordinate view one step down
+    static void coordinateShiftDownCallback(Fl_Widget* w, void* data) {
+        TabAutoStage* tab = static_cast<TabAutoStage*>(data);
+        int max_index = std::max(0, (int)tab->autostage_backend.getCoordinateCount() - 1);
+        int new_index = std::min(max_index, tab->coord_view_index + 1);
+        tab->coord_view_index = new_index;
+        tab->coord_spinner[0]->value(std::to_string(new_index).c_str());
+        tab->updateCoordinateDisplay();
     }
 
     // Callback: Start AutoStage measurement
@@ -364,7 +306,7 @@ private:
         
         if (tab->btn_start->value()) {
             // Starting
-            if (tab->internal_coordinates.empty()) {
+            if (tab->autostage_backend.getCoordinateCount() == 0) {
                 ErrorLogger::GetInstance().LogError(
                     ErrorCodes::CATEGORY_STAGE, 0x0005,
                     "AutoStage: No coordinates to measure",
@@ -387,7 +329,7 @@ private:
 
     // Dummy backend measurement function
     void runAutoStageMeasurement() {
-        int total = internal_coordinates.size();
+        int total = autostage_backend.getCoordinateCount();
         
         for (int i = 0; i < total && is_running; i++) {
             // Update UI with current coordinate
@@ -395,7 +337,7 @@ private:
                 stat_iterator->value(std::to_string(i + 1).c_str());
                 updateExcitationDisplay(i);
                 
-                float progress = (float)(i + 1) / (float)internal_coordinates.size() * 100.0f;
+                float progress = (float)(i + 1) / (float)autostage_backend.getCoordinateCount() * 100.0f;
                 progress_bar->value(progress);
             });
             
@@ -411,7 +353,7 @@ private:
             ErrorLogger::GetInstance().LogError(
                 ErrorCodes::CATEGORY_STAGE, 0x1002,
                 "AutoStage: Measurement completed",
-                "Processed " + std::to_string(internal_coordinates.size()) + " coordinates"
+                "Processed " + std::to_string(autostage_backend.getCoordinateCount()) + " coordinates"
             );
         });
     }
@@ -447,42 +389,36 @@ public:
         lbl_cycle->labelfont(FL_HELVETICA_BOLD);
         
         // Column Headers
-        Fl_Box* c1 = new Fl_Box(cyc_x + 60, cyc_y + 30, 60, 30, "step\n[" "\xCE\xBC" "m]"); // micro symbol
-        Fl_Box* c2 = new Fl_Box(cyc_x + 130, cyc_y + 30, 70, 30, "cycle mod");
-        Fl_Box* c3 = new Fl_Box(cyc_x + 210, cyc_y + 30, 110, 30, "range\n[" "\xCE\xBC" "m]");
+        Fl_Box* c1 = new Fl_Box(cyc_x + 50, cyc_y + 30, 70, 30, "start [µm]");
+        Fl_Box* c2 = new Fl_Box(cyc_x + 130, cyc_y + 30, 70, 30, "end [µm]");
+        Fl_Box* c3 = new Fl_Box(cyc_x + 210, cyc_y + 30, 110, 30, "step [µm]");
         c1->labelsize(11); c2->labelsize(11); c3->labelsize(11);
 
         const char* axisNames[] = {"x-axis", "y-axis", "z-axis"};
-        const char* defStep[] = {"1", "1", "0"};
-        const char* defCyc[] = {"1", "1", "0"};
-        const char* defRangeMin[] = {"150", "150", "150"};
-        const char* defRangeMax[] = {"150", "150", "150"};
+        const char* defStart[] = {"0", "0", "0"};
+        const char* defEnd[] = {"100", "100", "100"};
+        const char* defStep[] = {"10", "10", "10"};
 
         for (int i = 0; i < 3; i++) {
             int yy = cyc_y + 65 + i * 30;
-            Fl_Box* aLbl = new Fl_Box(cyc_x + 10, yy, 50, 25, axisNames[i]);
+            Fl_Box* aLbl = new Fl_Box(cyc_x + 10, yy, 40, 25, axisNames[i]);
             aLbl->align(FL_ALIGN_RIGHT | FL_ALIGN_INSIDE);
             aLbl->labelsize(12);
 
-            Fl_Float_Input* iStep = new Fl_Float_Input(cyc_x + 65, yy, 50, 25);
+            Fl_Float_Input* iStart = new Fl_Float_Input(cyc_x + 55, yy, 60, 25);
+            iStart->value(defStart[i]);
+            cycle_start[i] = iStart;
+            iStart->callback(cycleParamChangedCallback, this);
+
+            Fl_Float_Input* iEnd = new Fl_Float_Input(cyc_x + 125, yy, 60, 25);
+            iEnd->value(defEnd[i]);
+            cycle_end[i] = iEnd;
+            iEnd->callback(cycleParamChangedCallback, this);
+
+            Fl_Float_Input* iStep = new Fl_Float_Input(cyc_x + 195, yy, 60, 25);
             iStep->value(defStep[i]);
             cycle_step[i] = iStep;
             iStep->callback(cycleParamChangedCallback, this);
-
-            Fl_Int_Input* iMod = new Fl_Int_Input(cyc_x + 135, yy, 60, 25);
-            iMod->value(defCyc[i]);
-            cycle_mod[i] = iMod;
-            iMod->callback(cycleParamChangedCallback, this);
-
-            Fl_Float_Input* iRMin = new Fl_Float_Input(cyc_x + 210, yy, 50, 25);
-            iRMin->value(defRangeMin[i]);
-            cycle_range_min[i] = iRMin;
-            iRMin->callback(cycleParamChangedCallback, this);
-
-            Fl_Float_Input* iRMax = new Fl_Float_Input(cyc_x + 270, yy, 50, 25);
-            iRMax->value(defRangeMax[i]);
-            cycle_range_max[i] = iRMax;
-            iRMax->callback(cycleParamChangedCallback, this);
         }
         grp_cycle->end();
 
@@ -522,14 +458,33 @@ public:
         coord_spinner[0] = new Fl_Int_Input(cx - 180, coord_y + 38, 65, 22);
         coord_spinner[0]->value("0");
         coord_spinner[0]->callback(coordinateShiftCallback, this);
+
+        coord_shift_up = new Fl_Button(cx - 180, coord_y + 64, 65, 22, "up");
+        coord_shift_up->callback(coordinateShiftUpCallback, this);
+
+        coord_shift_down = new Fl_Button(cx - 180, coord_y + 90, 65, 22, "down");
+        coord_shift_down->callback(coordinateShiftDownCallback, this);
         
         // 3x3 Table - displays 3 consecutive coordinates with 3 decimal places
-        Fl_Group* coord_tbl = new Fl_Group(cx - 105, coord_y + 25, 140, 80);
+        // Extended X-size by 100% to improve readability.
+        const int coord_cell_w = 82;
+        const int coord_cell_h = 22;
+        const int coord_cell_pitch_x = coord_cell_w + 4;
+        const int coord_cell_pitch_y = 26;
+        const int coord_tbl_w = coord_cell_pitch_x * 3 + 4;
+        const int coord_tbl_h = coord_cell_pitch_y * 3 + 2;
+
+        Fl_Group* coord_tbl = new Fl_Group(cx - 105, coord_y + 25, coord_tbl_w, coord_tbl_h);
         coord_tbl->box(FL_ENGRAVED_FRAME);
         coord_view_index = 0;
         for(int r=0; r<3; r++) {
             for(int c=0; c<3; c++) {
-                Fl_Input* in = new Fl_Input(cx - 105 + c*45 + 2, coord_y + 25 + r*26 + 2, 41, 22);
+                Fl_Input* in = new Fl_Input(
+                    cx - 105 + c * coord_cell_pitch_x + 2,
+                    coord_y + 25 + r * coord_cell_pitch_y + 2,
+                    coord_cell_w,
+                    coord_cell_h
+                );
                 in->value("0.000");
                 in->readonly(1);  // Read-only display
                 coord_display[r][c] = in;

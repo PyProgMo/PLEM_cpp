@@ -26,6 +26,7 @@ $COMPILER -std=c++17 \
     -Istandalone_devices/thorlabs_powermeter/Include \
     src/main.cpp \
     src/backend/DebugConsole.cpp \
+    src/backend/AutoStage.cpp \
     src/fbconnector/FBConnector.cpp \
     standalone_devices/thorlabs_powermeter/tl100d_reader/src/ThorlabsPM.cpp \
     -o build/windows/Template.exe \
