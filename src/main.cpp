@@ -3,6 +3,7 @@
 #include "frontend/FrontendConnection.h"
 #include "../include/DebugConsole.h"
 #include "../standalone_devices/thorlabs_powermeter/tl100d_reader/src/ThorlabsPM.h"
+#include "fbconnector/FBConnector.h"
 
 int main(int argc, char** argv) {
     Fl::scheme("gtk+"); // Make the GUI look more modern
@@ -28,12 +29,16 @@ int main(int argc, char** argv) {
     ThorlabsPM* powermeter = new ThorlabsPM(PMMode::CONSOLE);
     debugConsole.registerComponent("thorlabs", powermeter);
 
+    // Start the FBConnector engine
+    FBConnector::get().start();
+
     FrontendConnection* window = new FrontendConnection(1200, 800, "PLEM Multi-Pane Frontend", &debugConsole);
     window->show(argc, argv);
     
     int result = Fl::run();
     
     // Cleanup
+    FBConnector::get().stop();
     debugConsole.stop();
     delete powermeter;
     return result;
