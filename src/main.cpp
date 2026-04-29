@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
     FBConnector::get().setDebugConsole(&debugConsole);
     FBConnector::get().start();
 
-    FrontendConnection* window = new FrontendConnection(1200, 800, "PLEM Multi-Pane Frontend", &debugConsole);
+    FrontendConnection* window = new FrontendConnection(1200, 800, "PLEM Multi-Pane Frontend", &debugConsole, powermeter);
     
     // Register the main window with FBConnector for proper shutdown closure
     FBConnector::get().setMainWindow(window);

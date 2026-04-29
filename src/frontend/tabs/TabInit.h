@@ -5,6 +5,10 @@
 #include <FL/Fl_Value_Input.H>
 #include <FL/fl_draw.H>
 
+#include "../../fbconnector/FBConnector.h"
+#include "../../../include/ErrorLogger.h"
+#include "../../../standalone_devices/thorlabs_powermeter/tl100d_reader/src/ThorlabsPM.h"
+
 // Custom LED Widget to look like LabVIEW indicators
 class FancyLED : public Fl_Widget {
     bool state_;
@@ -30,8 +34,57 @@ public:
 };
 
 class TabInit : public Fl_Group {
+private:
+    ThorlabsPM* powermeter;
+    FancyLED* pm_led;
+    FancyToggle* pm_toggle;
+
+    static void pmToggleCallback(Fl_Widget* w, void* data) {
+        TabInit* tab = static_cast<TabInit*>(data);
+        tab->handlePmToggle();
+    }
+
+    void handlePmToggle() {
+        if (!powermeter) return;
+        
+        bool willInit = pm_toggle->value(); // The desired state
+        if (willInit) {
+            FBConnector::get().enqueueTask([this]() {
+                bool res = powermeter->init();
+                FBConnector::get().enqueueUIUpdate([this, res]() {
+                    pm_led->set_state(res);
+                    pm_toggle->value(res ? 1 : 0);
+                    if (!res) {
+                        ErrorLogger::GetInstance().LogError(
+                            ErrorCodes::CATEGORY_POWERMETER, 0x0001,
+                            "Powermeter Init Failed", "Failed to initialize TLPM hardware."
+                        );
+                    }
+                });
+            }, pm_toggle);
+        } else {
+            FBConnector::get().enqueueTask([this]() {
+                bool res = powermeter->deinit();
+                FBConnector::get().enqueueUIUpdate([this, res]() {
+                    // Update state regardless of deinit success
+                    pm_led->set_state(powermeter->getStatus());
+                    pm_toggle->value(powermeter->getStatus() ? 1 : 0);
+                    
+                    if (!res) {
+                        ErrorLogger::GetInstance().LogError(
+                            ErrorCodes::CATEGORY_POWERMETER, 0x0002,
+                            "Powermeter Deinit Failed", "Failed to deinitialize TLPM hardware."
+                        );
+                    }
+                });
+            }, pm_toggle);
+        }
+    }
+
 public:
-    TabInit(int X, int Y, int W, int H, const char* L = 0) : Fl_Group(X, Y, W, H, L) {
+    TabInit(int X, int Y, int W, int H, const char* L = 0, ThorlabsPM* pm = nullptr) 
+        : Fl_Group(X, Y, W, H, L), powermeter(pm), pm_led(nullptr), pm_toggle(nullptr) {
+        
         int cx = X + W / 2;
         
         // -------------------------------------------------------------
@@ -55,6 +108,8 @@ public:
             FancyLED* led = new FancyLED(b1_x + 15, yy + 4, 18, 18);
             if(i == 3) led->set_state(false); // Nanostage is green in screenshot
             
+            if (i == 2) pm_led = led; // Save powermeter LED
+
             Fl_Box* lbl = new Fl_Box(b1_x + 45, yy, b1_w - 50, 26, devNames[i]);
             lbl->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
             lbl->labelsize(13);
@@ -80,6 +135,19 @@ public:
             FancyToggle* tgl = new FancyToggle(b2_x + 10, yy + 2, 120, 24, initNames[i]);
             tgl->labelsize(12);
             tgl->labelfont(FL_HELVETICA_BOLD);
+
+            if (i == 2) {
+                pm_toggle = tgl;
+                
+                // Initialize default state if passed
+                if (powermeter) {
+                    bool status = powermeter->getStatus();
+                    pm_toggle->value(status ? 1 : 0);
+                    if (pm_led) pm_led->set_state(status);
+                }
+                
+                pm_toggle->callback(pmToggleCallback, this);
+            }
         }
         p2->end();
 
