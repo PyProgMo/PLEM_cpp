@@ -9,12 +9,14 @@
 #include <FL/Fl_Browser.H>
 #include "../../../include/ErrorLogger.h"
 #include "../../../include/ErrorCodes.h"
+#include "../../fbconnector/FBConnector.h"
 #include <thread>
 #include <chrono>
 
 class TabAdmin : public Fl_Group {
 private:
     Fl_Check_Button* chk_log_errors;
+    Fl_Check_Button* chk_dev_mode;
     Fl_Text_Buffer* buf_current;
     Fl_Text_Display* out_current;
     Fl_Text_Buffer* buf_last;
@@ -32,11 +34,35 @@ private:
         ErrorLogger::GetInstance().SetLoggingEnabled(chk->value() != 0);
     }
 
+    // Callback to toggle developer mode
+    static void DevModeToggleCallback(Fl_Widget* w, void* data) {
+        Fl_Check_Button* chk = static_cast<Fl_Check_Button*>(w);
+        ErrorLogger::GetInstance().SetDeveloperMode(chk->value() != 0);
+    }
+
     // Callback for clear history button
     static void ClearHistoryCallback(Fl_Widget* w, void* data) {
         TabAdmin* tab = static_cast<TabAdmin*>(data);
         ErrorLogger::GetInstance().ClearErrorHistory();
         tab->UpdateErrorDisplay();
+    }
+
+    // Callback for shutdown button
+    static void ShutdownCallback(Fl_Widget* w, void* data) {
+        TabAdmin* tab = static_cast<TabAdmin*>(data);
+        
+        // Log shutdown initiation
+        ErrorLogger::GetInstance().LogError(0x00000000, "Application Shutdown", 
+                                           "shutdown initiated by user.");
+        
+        // Disable the shutdown button to prevent multiple clicks
+        Fl_Button* btn = static_cast<Fl_Button*>(w);
+        btn->deactivate();
+        btn->label("Shutting down...");
+        Fl::redraw();
+        
+        // Request graceful shutdown through FBConnector
+        FBConnector::get().requestShutdown();
     }
 
     // Update error display
@@ -107,16 +133,28 @@ public:
         int gy = cy + 20;
 
         // ===== LOGGING CONTROL =====
-        chk_log_errors = new Fl_Check_Button(gx, gy, 200, 25, "Log errors to file");
+        chk_log_errors = new Fl_Check_Button(gx, gy, 150, 25, "Log errors to file");
         chk_log_errors->value(1); // Default enabled
         chk_log_errors->callback(LoggingToggleCallback, this);
         ErrorLogger::GetInstance().SetLoggingEnabled(true);
         
+        // Developer mode checkbox
+        chk_dev_mode = new Fl_Check_Button(gx + 160, gy, 150, 25, "Developer Mode");
+        chk_dev_mode->value(1); // Default enabled
+        chk_dev_mode->callback(DevModeToggleCallback, this);
+        ErrorLogger::GetInstance().SetDeveloperMode(true);
+        
         // Clear history button
-        Fl_Button* btn_clear = new Fl_Button(gx + 210, gy, 100, 25, "Clear History");
+        Fl_Button* btn_clear = new Fl_Button(gx, gy + 35, 100, 25, "Clear History");
         btn_clear->callback(ClearHistoryCallback, this);
         
-        gy += 35;
+        // Shutdown button
+        Fl_Button* btn_shutdown = new Fl_Button(gx + 110, gy + 35, 100, 25, "Shutdown");
+        btn_shutdown->color(FL_RED);
+        btn_shutdown->labelcolor(FL_WHITE);
+        btn_shutdown->callback(ShutdownCallback, this);
+        
+        gy += 70;
         
         // --- Current Error Display (Continuous) ---
         Fl_Box* lbl_current = new Fl_Box(gx, gy, 250, 20, "Current Error (Continuously Updating):");

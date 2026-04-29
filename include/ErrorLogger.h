@@ -21,10 +21,11 @@ private:
     std::string currentLogFile;
     mutable std::mutex logMutex;
     bool loggingEnabled;
+    bool developerModeEnabled;
     std::vector<std::pair<std::string, std::string>> errorHistory; // timestamp, message
 
     // Private constructor
-    ErrorLogger() : loggingEnabled(true) {
+    ErrorLogger() : loggingEnabled(true), developerModeEnabled(true) {
         logDirectory = "log/errors";
         InitializeLogDirectory();
     }
@@ -203,6 +204,38 @@ public:
         return loggingEnabled;
     }
 
+    // Set developer mode enabled/disabled
+    void SetDeveloperMode(bool enabled) {
+        std::lock_guard<std::mutex> lock(logMutex);
+        developerModeEnabled = enabled;
+    }
+
+    // Check if developer mode is enabled
+    bool IsDeveloperMode() const {
+        std::lock_guard<std::mutex> lock(logMutex);
+        return developerModeEnabled;
+    }
+
+    // Log user input to a separate log file
+    void LogUserInput(const std::string& inputAction) {
+        if (!IsDeveloperMode()) return;
+        
+        std::lock_guard<std::mutex> lock(logMutex);
+        try {
+            std::string dateStr = GetDateString();
+            std::string logFilePath = logDirectory + "/dev_input_" + dateStr + ".log";
+            
+            std::ofstream outFile(logFilePath, std::ios::app);
+            if (outFile.is_open()) {
+                auto timestamp = GetTimestamp();
+                outFile << "[" << timestamp << "] [USER_INPUT] " << inputAction << std::endl;
+                outFile.close();
+            }
+        } catch (...) {
+            // Silently fail if we can't write to dev input
+        }
+    }
+
     // Get error history (last N errors)
     std::vector<std::pair<std::string, std::string>> GetErrorHistory(size_t count = 50) const {
         std::lock_guard<std::mutex> lock(logMutex);
@@ -245,8 +278,8 @@ public:
 };
 
 // Initialize static members
-ErrorLogger* ErrorLogger::instance = nullptr;
-std::mutex ErrorLogger::instanceMutex;
+inline ErrorLogger* ErrorLogger::instance = nullptr;
+inline std::mutex ErrorLogger::instanceMutex;
 
 // Convenience macros for logging
 #define LOG_ERROR(code, msg) ErrorLogger::GetInstance().LogError(code, msg)
