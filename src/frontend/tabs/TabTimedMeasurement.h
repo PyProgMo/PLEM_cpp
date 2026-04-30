@@ -46,6 +46,7 @@ public:
         lbl_meas_type->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
         Fl_Choice* ch_meas_type = new Fl_Choice(ix, iy, 120, 25);
         ch_meas_type->add("spectrum");
+        ch_meas_type->add("image");
         ch_meas_type->value(0);
 
         // Timed-Counter

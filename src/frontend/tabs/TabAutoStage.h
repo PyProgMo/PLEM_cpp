@@ -500,7 +500,7 @@ public:
         Fl_Int_Input* exc_s1 = new Fl_Int_Input(cx - 180, exc_y + 25, 65, 25);
         exc_s1->value("0");
         Fl_Int_Input* exc_s2 = new Fl_Int_Input(cx - 180, exc_y + 55, 65, 25);
-        exc_s2->value("2195");
+        exc_s2->value("0");
         
         // 2x3 Table - moved left with more space
         Fl_Group* exc_tbl = new Fl_Group(cx - 105, exc_y + 25, 140, 56);
