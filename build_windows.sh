@@ -234,6 +234,10 @@ if [ -f build/windows/Template.exe ]; then
     rc=$?
     if [ $rc -eq 0 ]; then FLTK_COPY_SUCCESS=$((FLTK_COPY_SUCCESS+1)); else FLTK_COPY_FAILED=$((FLTK_COPY_FAILED+1)); fi
 
+    find_and_copy_pattern "zlib*.dll" "build/windows" "zlib1.dll"
+    rc=$?
+    if [ $rc -eq 0 ]; then FLTK_COPY_SUCCESS=$((FLTK_COPY_SUCCESS+1)); elif [ $rc -eq 2 ]; then FLTK_COPY_FAILED=$((FLTK_COPY_FAILED+1)); fi
+
     find_and_copy_pattern "libz*.dll" "build/windows" "libz.dll"
     rc=$?
     if [ $rc -eq 0 ]; then FLTK_COPY_SUCCESS=$((FLTK_COPY_SUCCESS+1)); elif [ $rc -eq 2 ]; then FLTK_COPY_FAILED=$((FLTK_COPY_FAILED+1)); fi
@@ -244,7 +248,7 @@ if [ -f build/windows/Template.exe ]; then
         echo "The application may not run properly."
         echo ""
         echo "DLL source locations used (failures only):"
-        for name in TLPM_64.dll libfltk.dll libfltk_images.dll libpng16.dll libpng.dll libz.dll; do
+        for name in TLPM_64.dll libfltk.dll libfltk_images.dll libpng16.dll libpng.dll zlib1.dll libz.dll; do
             src=${SRC_MAP["$name"]}
             if [ -n "$src" ]; then
                 echo " - $name -> $src"

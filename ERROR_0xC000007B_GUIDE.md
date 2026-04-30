@@ -31,7 +31,7 @@ The application was unable to start correctly (0xc000007b)
 ### Step 1: Run Diagnostics (BEFORE rebuilding)
 
 ```bash
-bash DLL_DIAGNOSTICS.sh
+bash debug/diagnose_0xc000007b.sh
 ```
 
 This script checks:
@@ -39,6 +39,12 @@ This script checks:
 - ✓ FLTK installation (must be 64-bit)
 - ✓ Each DLL bitness (must all be 64-bit)
 - ✓ DLL availability
+
+If you only need the build-time compatibility gate, you can still use:
+
+```bash
+bash DLL_DIAGNOSTICS.sh
+```
 
 ### Step 2: Check Your FLTK Installation
 
@@ -146,7 +152,7 @@ pacman -Q mingw-w64-x86_64-fltk
 ls /mingw64/bin/libfltk.dll
 
 # 6. Run diagnostics
-bash DLL_DIAGNOSTICS.sh
+bash debug/diagnose_0xc000007b.sh
 
 # 7. If diagnostics pass, rebuild
 ./build_windows.sh

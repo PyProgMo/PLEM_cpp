@@ -129,6 +129,21 @@ Solutions:
 bash DLL_DIAGNOSTICS.sh
 ```
 
+### debug/diagnose_0xc000007b.sh (Runtime Dependency Check)
+
+**What it does:**
+- Scans `build/windows/Template.exe` and the DLLs in `build/windows/` and `build/dlls/`
+- Resolves imported DLLs with `objdump`
+- Reports missing or 32-bit runtime dependencies that can cause 0xc000007b
+- Stays failure-focused so clean runs stay compact
+
+**Usage:**
+```bash
+bash debug/diagnose_0xc000007b.sh
+```
+
+Use this when the executable exists but Windows still reports 0xc000007b at launch.
+
 **Run this manually to:**
 - Troubleshoot before building
 - Verify your installation
