@@ -1,0 +1,14 @@
+Using built-in specs.
+COLLECT_GCC=C:\msys64\mingw32\bin\gcc.exe
+Target: i686-w64-mingw32
+Configured with: ../gcc-16.1.0/configure --prefix=/mingw32 --with-local-prefix=/mingw32/local --libexecdir=/mingw32/lib --enable-bootstrap --enable-checking=release --with-arch=pentium4 --with-tune=generic --enable-mingw-wildcard --enable-languages=c,c++,lto --enable-shared --enable-static --enable-libatomic --enable-threads=posix --enable-graphite --enable-fully-dynamic-string --enable-libstdcxx-backtrace=yes --enable-libstdcxx-filesystem-ts --enable-libstdcxx-time --disable-libstdcxx-pch --enable-libgomp --disable-libssp --disable-multilib --disable-rpath --disable-win32-registry --disable-nls --disable-werror --disable-symvers --with-libiconv --with-system-zlib --with-gmp=/mingw32 --with-mpfr=/mingw32 --with-mpc=/mingw32 --with-isl=/mingw32 --with-pkgversion='Rev2, Built by MSYS2 project' --with-bugurl=https://github.com/msys2/MINGW-packages/issues --with-gnu-as --with-gnu-ld --with-libstdcxx-zoneinfo=yes --disable-libstdcxx-debug --disable-sjlj-exceptions --with-dwarf2 --enable-lto --with-boot-ldflags=-static-libstdc++ --with-stage1-ldflags=-static-libstdc++
+Thread model: posix
+Supported LTO compression algorithms: zlib zstd
+gcc version 16.1.0 (Rev2, Built by MSYS2 project) 
+COLLECT_GCC_OPTIONS='-Wall' '-O2' '-std=c99' '-I' 'include' '-I' 'E816_DLL' '-c' '-o' 'build/obj/main.o' '-mtune=generic' '-march=pentium4' '-dumpdir' 'build/obj/'
+ "C:/msys64/mingw32/bin/../lib/gcc/i686-w64-mingw32/16.1.0/cc1.exe" -quiet -I include -I E816_DLL -iprefix "C:/msys64/mingw32/bin/../lib/gcc/i686-w64-mingw32/16.1.0/" -D_REENTRANT src/main.c -quiet -dumpdir build/obj/ -dumpbase main.c -dumpbase-ext .c "-mtune=generic" "-march=pentium4" -O2 -Wall "-std=c99" -o "C:\\msys64\\tmp\\ccYVPekG.s"
+COLLECT_GCC_OPTIONS='-Wall' '-O2' '-std=c99' '-I' 'include' '-I' 'E816_DLL' '-c' '-o' 'build/obj/main.o' '-mtune=generic' '-march=pentium4' '-dumpdir' 'build/obj/'
+ "C:/msys64/mingw32/bin/../lib/gcc/i686-w64-mingw32/16.1.0/../../../../i686-w64-mingw32/bin/as.exe" -I include -I E816_DLL -o build/obj/main.o "C:\\msys64\\tmp\\ccYVPekG.s"
+COMPILER_PATH=C:/msys64/mingw32/bin/../lib/gcc/i686-w64-mingw32/16.1.0/;C:/msys64/mingw32/bin/../lib/gcc/;C:/msys64/mingw32/bin/../lib/gcc/i686-w64-mingw32/16.1.0/../../../../i686-w64-mingw32/bin/
+LIBRARY_PATH=C:/msys64/mingw32/bin/../lib/gcc/i686-w64-mingw32/16.1.0/;C:/msys64/mingw32/bin/../lib/gcc/;C:/msys64/mingw32/bin/../lib/gcc/i686-w64-mingw32/16.1.0/../../../../i686-w64-mingw32/lib/../lib/;C:/msys64/mingw32/bin/../lib/gcc/i686-w64-mingw32/16.1.0/../../../../lib/;C:/msys64/mingw32/bin/../lib/gcc/i686-w64-mingw32/16.1.0/../../../../i686-w64-mingw32/lib/;C:/msys64/mingw32/bin/../lib/gcc/i686-w64-mingw32/16.1.0/../../../
+COLLECT_GCC_OPTIONS='-Wall' '-O2' '-std=c99' '-I' 'include' '-I' 'E816_DLL' '-c' '-o' 'build/obj/main.o' '-mtune=generic' '-march=pentium4' '-dumpdir' 'build/obj/main.'

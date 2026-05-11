@@ -1,0 +1,27 @@
+# Build artifacts
+build/
+*.o
+*.a
+*.exe
+*.dll
+
+# Generated files
+PI_E816.def
+libPI_E816.a
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-workspace
+
+# OS specific
+.DS_Store
+Thumbs.db
+*.exe.stackdump
+
+# Temporary files
+*.tmp
+*.log
