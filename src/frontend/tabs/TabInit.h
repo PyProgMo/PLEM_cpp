@@ -8,6 +8,7 @@
 #include "../../fbconnector/FBConnector.h"
 #include "../../../include/ErrorLogger.h"
 #include "../../../standalone_devices/thorlabs_powermeter/tl100d_reader/src/ThorlabsPM.h"
+#include "../../backend/AndorBackend.h"
 
 // Custom LED Widget to look like LabVIEW indicators
 class FancyLED : public Fl_Widget {
@@ -36,8 +37,30 @@ public:
 class TabInit : public Fl_Group {
 private:
     ThorlabsPM* powermeter;
+    AndorBackend* andor;
     FancyLED* pm_led;
     FancyToggle* pm_toggle;
+
+    struct CamData {
+        TabInit* tab;
+        std::string name;
+        FancyLED* led;
+        FancyToggle* tgl;
+    };
+    std::vector<CamData*> camDatas;
+
+    struct TempData {
+        TabInit* tab;
+        std::string name;
+        Fl_Value_Input* val;
+        FancyToggle* tgl;
+    };
+    std::vector<TempData*> tempDatas;
+
+    ~TabInit() {
+        for(auto* cd : camDatas) delete cd;
+        for(auto* td : tempDatas) delete td;
+    }
 
     static void pmToggleCallback(Fl_Widget* w, void* data) {
         TabInit* tab = static_cast<TabInit*>(data);
@@ -81,9 +104,62 @@ private:
         }
     }
 
+    static void camToggleCallback(Fl_Widget* w, void* data) {
+        CamData* ctx = static_cast<CamData*>(data);
+        ctx->tab->handleCamToggle(ctx);
+    }
+
+    void handleCamToggle(CamData* ctx) {
+        if (!andor) return;
+        
+        bool willInit = ctx->tgl->value();
+        std::string name = ctx->name;
+        FancyLED* led = ctx->led;
+        FancyToggle* tgl = ctx->tgl;
+
+        if (willInit) {
+            FBConnector::get().enqueueTask([this, name, led, tgl]() {
+                bool res = andor->initCamera(name);
+                FBConnector::get().enqueueUIUpdate([res, led, tgl]() {
+     
+
+    static void coolingToggleCallback(Fl_Widget* w, void* data) {
+        TempData* ctx = static_cast<TempData*>(data);
+        ctx->tab->handleCoolingToggle(ctx);
+    }
+
+    void handleCoolingToggle(TempData* ctx) {
+        if (!andor) return;
+        bool willCool = ctx->tgl->value();
+        std::string name = ctx->name;
+        int targetTemp = willCool ? static_cast<int>(ctx->val->value()) : 20;
+        
+        FancyToggle* tgl = ctx->tgl;
+        
+        FBConnector::get().enqueueTask([this, name, targetTemp, tgl]() {
+            bool res = andor->setCooling(name, targetTemp);
+            FBConnector::get().enqueueUIUpdate([res, tgl]() {
+                // Keep it simple: if it fails, maybe flip toggle back, but we trust Andor
+            });
+        }, tgl);
+    }               led->set_state(res);
+                    tgl->value(res ? 1 : 0);
+                });
+            }, tgl);
+        } else {
+            FBConnector::get().enqueueTask([this, name, led, tgl]() {
+                bool res = andor->deinitCamera(name);
+                FBConnector::get().enqueueUIUpdate([res, led, tgl]() {
+                    led->set_state(false);
+                    tgl->value(0);
+                });
+            }, tgl);
+        }
+    }
+
 public:
-    TabInit(int X, int Y, int W, int H, const char* L = 0, ThorlabsPM* pm = nullptr) 
-        : Fl_Group(X, Y, W, H, L), powermeter(pm), pm_led(nullptr), pm_toggle(nullptr) {
+    TabInit(int X, int Y, int W, int H, const char* L = 0, ThorlabsPM* pm = nullptr, AndorBackend* andor_bg = nullptr) 
+        : Fl_Group(X, Y, W, H, L), powermeter(pm), andor(andor_bg), pm_led(nullptr), pm_toggle(nullptr) {
         
         int cx = X + W / 2;
         
@@ -102,6 +178,7 @@ public:
         p1->box(FL_ROUNDED_BOX);
         p1->color(fl_rgb_color(240, 240, 240));
         
+        FancyLED* all_leds[10] = {nullptr};
         const char* devNames[] = {"spectrograph", "lightsource", "powermeter", "nanostage", "cameras", "init Newton", "init iDus", "init Clara", "init Xeva", "vallaman"};
         for(int i=0; i<10; i++) {
             int yy = b1_y + 10 + i*row_height;
@@ -109,6 +186,7 @@ public:
             if(i == 3) led->set_state(false); // Nanostage is green in screenshot
             
             if (i == 2) pm_led = led; // Save powermeter LED
+            all_leds[i] = led;
 
             Fl_Box* lbl = new Fl_Box(b1_x + 45, yy, b1_w - 50, 26, devNames[i]);
             lbl->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
@@ -145,8 +223,18 @@ public:
                     pm_toggle->value(status ? 1 : 0);
                     if (pm_led) pm_led->set_state(status);
                 }
+              else if (i >= 5 && i <= 8) {
+                std::string camName = (i == 5) ? "Newton" : (i == 6) ? "iDus" : (i == 7) ? "Clara" : "Xeva";
+                CamData* cd = new CamData{this, camName, all_leds[i], tgl};
+                camDatas.push_back(cd);
                 
-                pm_toggle->callback(pmToggleCallback, this);
+                if (andor) {
+                    bool status = andor->isInitialized(camName);
+                    tgl->value(status ? 1 : 0);
+                    all_leds[i]->set_state(status);
+                }
+                
+                tgl->callback(camToggleCallback, cd);
             }
         }
         p2->end();
@@ -174,7 +262,7 @@ public:
             
             // Yellow toggle
             FancyToggle* tgl = new FancyToggle(b4_x + 60, yy, 22, 22, "");
-            tgl->value(1);
+            tgl->value(0); // Default to off
             
             // Value input 
             Fl_Value_Input* val = new Fl_Value_Input(b4_x + 85, yy, 45, 22);
@@ -182,6 +270,10 @@ public:
             val->step(1);
             val->textsize(12);
             val->box(FL_DOWN_BOX);
+            
+            TempData* td = new TempData{this, tempNames[i], val, tgl};
+            tempDatas.push_back(td);
+            tgl->callback(coolingToggleCallback, td);
         }
         p4->end();
 

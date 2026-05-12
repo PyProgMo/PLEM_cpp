@@ -3,6 +3,7 @@
 #include "frontend/FrontendConnection.h"
 #include "../include/DebugConsole.h"
 #include "../standalone_devices/thorlabs_powermeter/tl100d_reader/src/ThorlabsPM.h"
+#include "backend/AndorBackend.h"
 #include "fbconnector/FBConnector.h"
 #include "../include/ErrorLogger.h"
 #include <string>
@@ -30,11 +31,13 @@ int main(int argc, char** argv) {
     ThorlabsPM* powermeter = new ThorlabsPM(PMMode::CONSOLE);
     debugConsole.registerComponent("thorlabs", powermeter);
 
+    AndorBackend* andorBackend = new AndorBackend();
+
     // Start the FBConnector engine and register components for shutdown
     FBConnector::get().setDebugConsole(&debugConsole);
     FBConnector::get().start();
 
-    FrontendConnection* window = new FrontendConnection(1200, 800, "PLEM Multi-Pane Frontend", &debugConsole, powermeter);
+    FrontendConnection* window = new FrontendConnection(1200, 800, "PLEM Multi-Pane Frontend", &debugConsole, powermeter, andorBackend);
     
     // Register the main window with FBConnector for proper shutdown closure
     FBConnector::get().setMainWindow(window);
@@ -47,5 +50,6 @@ int main(int argc, char** argv) {
     FBConnector::get().stop();
     debugConsole.stop();
     delete powermeter;
+    delete andorBackend;
     return result;
 }

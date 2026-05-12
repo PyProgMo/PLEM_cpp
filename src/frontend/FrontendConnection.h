@@ -26,6 +26,7 @@
 #include "tabs/TabLaserCmd.h"
 
 class ThorlabsPM;
+class AndorBackend;
 
 class DragAwareTabs : public Fl_Tabs {
 public:
@@ -57,7 +58,7 @@ private:
 
 class FrontendConnection : public Fl_Window {
 public:
-    FrontendConnection(int W, int H, const char* title, DebugConsole* dbgConsole = nullptr, ThorlabsPM* powermeter = nullptr) : Fl_Window(W, H, title) {
+    FrontendConnection(int W, int H, const char* title, DebugConsole* dbgConsole = nullptr, ThorlabsPM* powermeter = nullptr, AndorBackend* andor = nullptr) : Fl_Window(W, H, title) {
         // Main horizontal split
         Fl_Tile* tile = new Fl_Tile(0, 0, W, H);
         
@@ -68,7 +69,7 @@ public:
         new TabTimedMeasurement(0, 30, lw, H - 30, "Timed Meas.");
         new TabAutoStage(0, 30, lw, H - 30, "Auto-Stage");
         new TabPLEM(0, 30, lw, H - 30, "PLEM");
-        new TabInit(0, 30, lw, H - 30, "Init", powermeter);
+        new TabInit(0, 30, lw, H - 30, "Init", powermeter, andor);
         new TabAdmin(0, 30, lw, H - 30, "Admin");
         new TabDebugger(0, 30, lw, H - 30, "Debugger", dbgConsole);
         ltabs->end();
