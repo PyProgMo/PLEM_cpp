@@ -7,8 +7,8 @@
 
 #include "../../fbconnector/FBConnector.h"
 #include "../../../include/ErrorLogger.h"
-#include "../../../standalone_devices/thorlabs_powermeter/tl100d_reader/src/ThorlabsPM.h"
 #include "../../backend/AndorBackend.h"
+#include "../../../standalone_devices/thorlabs_powermeter/tl100d_reader/src/ThorlabsPM.h"
 
 // Custom LED Widget to look like LabVIEW indicators
 class FancyLED : public Fl_Widget {
@@ -57,7 +57,7 @@ private:
     };
     std::vector<TempData*> tempDatas;
 
-    ~TabInit() {
+    ~TabInit() override {
         for(auto* cd : camDatas) delete cd;
         for(auto* td : tempDatas) delete td;
     }
@@ -121,7 +121,20 @@ private:
             FBConnector::get().enqueueTask([this, name, led, tgl]() {
                 bool res = andor->initCamera(name);
                 FBConnector::get().enqueueUIUpdate([res, led, tgl]() {
-     
+                    led->set_state(res);
+                    tgl->value(res ? 1 : 0);
+                });
+            }, tgl);
+        } else {
+            FBConnector::get().enqueueTask([this, name, led, tgl]() {
+                bool res = andor->deinitCamera(name);
+                FBConnector::get().enqueueUIUpdate([res, led, tgl]() {
+                    led->set_state(false);
+                    tgl->value(0);
+                });
+            }, tgl);
+        }
+    }
 
     static void coolingToggleCallback(Fl_Widget* w, void* data) {
         TempData* ctx = static_cast<TempData*>(data);
@@ -142,19 +155,6 @@ private:
                 // Keep it simple: if it fails, maybe flip toggle back, but we trust Andor
             });
         }, tgl);
-    }               led->set_state(res);
-                    tgl->value(res ? 1 : 0);
-                });
-            }, tgl);
-        } else {
-            FBConnector::get().enqueueTask([this, name, led, tgl]() {
-                bool res = andor->deinitCamera(name);
-                FBConnector::get().enqueueUIUpdate([res, led, tgl]() {
-                    led->set_state(false);
-                    tgl->value(0);
-                });
-            }, tgl);
-        }
     }
 
 public:
@@ -223,7 +223,7 @@ public:
                     pm_toggle->value(status ? 1 : 0);
                     if (pm_led) pm_led->set_state(status);
                 }
-              else if (i >= 5 && i <= 8) {
+            } else if (i >= 5 && i <= 8) {
                 std::string camName = (i == 5) ? "Newton" : (i == 6) ? "iDus" : (i == 7) ? "Clara" : "Xeva";
                 CamData* cd = new CamData{this, camName, all_leds[i], tgl};
                 camDatas.push_back(cd);

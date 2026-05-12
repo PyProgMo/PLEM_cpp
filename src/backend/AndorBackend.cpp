@@ -35,7 +35,7 @@ bool AndorBackend::initCamera(const std::string& name) {
         return true;
     } catch (const std::exception& e) {
         ErrorLogger::GetInstance().LogError(
-            "ANDOR", 0x1000, "Camera Init Failed", e.what()
+            ErrorCodes::CATEGORY_CAMERA, 0x1000, "Camera Init Failed", e.what()
         );
         return false;
     }

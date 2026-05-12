@@ -70,13 +70,17 @@ $COMPILER -std=c++17 \
     src/main.cpp \
     src/backend/DebugConsole.cpp \
     src/backend/AutoStage.cpp \
+    src/backend/AndorBackend.cpp \
+    standalone_devices/andorwrapper/cpp/AndorCCD.cpp \
     src/fbconnector/FBConnector.cpp \
     standalone_devices/thorlabs_powermeter/tl100d_reader/src/ThorlabsPM.cpp \
     -o build/windows/Template.exe \
     -mwindows \
     -L/mingw64/lib \
     -Lstandalone_devices/thorlabs_powermeter/dll \
+    -Lstandalone_devices/andorwrapper/pytest \
     -lTLPM_64 \
+    -latmcd64d \
     -lfltk_images -lpng -lz -lfltk -lgdi32 -lcomdlg32 -lcomctl32 -lole32 -luuid -lws2_32 -lkernel32 -luser32 -lgdiplus -lshell32 -lwinspool -ladvapi32 -static-libgcc
 
 if [ -f build/windows/Template.exe ]; then
