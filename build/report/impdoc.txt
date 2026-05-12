@@ -1,0 +1,14 @@
+## Plan: FLTK PLEM Frontend Architecture
+
+This document tracks the iterative implementation of the PLEM frontend in C++ using FLTK.
+
+**Tasks**
+- [x] Step 1: Restructure the Main Layout (Modular Architecture)
+      - Main split view (Left Pane / Right Pane Top / Right Pane Bottom).
+      - Generate 13 distinct tab pages connected via `FrontendConnection.h`.
+- [ ] Step 2: Implement Left Pane Components
+      - Add configurations, timing menus, and auto-stage variables to `TabConfiguration.h`, `TabTimedMeasurement.h`, and `TabAutoStage.h`.
+- [ ] Step 3: Implement Right Top Displays
+      - Add graph displays to `TabSpectrum.h` and image viewer to `TabImage.h`.
+- [ ] Step 4: Implement Right Bottom Options
+      - Settings, saving logic, and background acquisition options logic.
