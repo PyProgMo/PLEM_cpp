@@ -91,7 +91,7 @@ public:
         // TOP LEFT: Device Status LEDs
         // -------------------------------------------------------------
         int row_height = 28;
-        int max_rows = 9; // 9 rows for 9 init toggles
+        int max_rows = 10; // 10 rows for 10 init toggles
         
         int b1_w = 140;
         int b1_h = max_rows * row_height + 20;
@@ -102,8 +102,8 @@ public:
         p1->box(FL_ROUNDED_BOX);
         p1->color(fl_rgb_color(240, 240, 240));
         
-        const char* devNames[] = {"spectrograph", "lightsource", "powermeter", "nanostage", "cameras", "init Newton", "init iDus", "init Clara", "init Xeva"};
-        for(int i=0; i<9; i++) {
+        const char* devNames[] = {"spectrograph", "lightsource", "powermeter", "nanostage", "cameras", "init Newton", "init iDus", "init Clara", "init Xeva", "vallaman"};
+        for(int i=0; i<10; i++) {
             int yy = b1_y + 10 + i*row_height;
             FancyLED* led = new FancyLED(b1_x + 15, yy + 4, 18, 18);
             if(i == 3) led->set_state(false); // Nanostage is green in screenshot
@@ -129,8 +129,8 @@ public:
         p2->box(FL_ROUNDED_BOX);
         p2->color(fl_rgb_color(240, 240, 240));
         
-        const char* initNames[] = {"spectrograph", "lightsource", "powermeter", "nanostage", "cameras (all)", "init Newton", "init iDus", "init Clara", "init Xeva"};
-        for(int i=0; i<9; i++) {
+        const char* initNames[] = {"spectrograph", "lightsource", "powermeter", "nanostage", "cameras (all)", "init Newton", "init iDus", "init Clara", "init Xeva", "vallaman"};
+        for(int i=0; i<10; i++) {
             int yy = b2_y + 10 + i*row_height;
             FancyToggle* tgl = new FancyToggle(b2_x + 10, yy + 2, 120, 24, initNames[i]);
             tgl->labelsize(12);
