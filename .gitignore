@@ -18,3 +18,6 @@ Thumbs.db
 
 # ignore specificlly build/windows/Template.exe
 build/windows/Template.exe
+
+# ignore standalone devices
+standalone_devices/
