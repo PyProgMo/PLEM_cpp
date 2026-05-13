@@ -215,8 +215,9 @@ if [ -f build/windows/Template.exe ]; then
     echo ""
     echo "Project DLLs:"
     # Add project dll source to candidates temporarily
-    CANDIDATE_DIRS=("build/windows" "standalone_devices/thorlabs_powermeter/dll" "${CANDIDATE_DIRS[@]}")
+    CANDIDATE_DIRS=("build/windows" "standalone_devices/thorlabs_powermeter/dll" "standalone_devices/andorwrapper/pytest" "${CANDIDATE_DIRS[@]}")
     find_and_copy_dll "TLPM_64.dll" "build/windows" || true
+    find_and_copy_dll "atmcd64d.dll" "build/windows" || true
 
     # Copy FLTK runtime DLLs
     echo ""
