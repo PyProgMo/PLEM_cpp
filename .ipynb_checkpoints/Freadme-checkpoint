@@ -1,0 +1,34 @@
+# HSI Measurement Control (FLTK)
+
+This is an FLTK desktop application for basic hyperspectral measurement workflow simulation.
+
+## Structure
+- `src/` - Source code
+- `include/` - Header files
+- `build/` - Compiled binaries and build artifacts
+- `build_windows.sh`, `build_linux.sh`, `build_mac.sh` - Build scripts for each platform
+
+## Building
+Run the appropriate build script for your platform:
+- **Windows:** `build_windows.sh`
+- **Linux:** `build_linux.sh`
+- **macOS:** `build_mac.sh`
+
+## Requirements
+- C++ compiler (MSVC, GCC, or Clang)
+- FLTK 1.4.x libraries
+
+## Usage
+After building, run the generated executable from the `build/<platform>/` directory.
+
+Current UI capabilities:
+- initialize laser, spectrometer and two CCD devices
+- deinitialize devices safely (also on app close)
+- activate/deactivate cooling
+- acquire and display 1D spectrum data
+- display 2D measurement heatmap data
+- save spectrum data as CSV
+
+---
+
+*Use this as a base for real hardware integration by replacing the simulated measurement generation with hardware drivers.*
