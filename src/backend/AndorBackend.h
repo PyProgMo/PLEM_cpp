@@ -5,16 +5,19 @@
 #include <memory>
 #include <mutex>
 #include "../../standalone_devices/andorwrapper/cpp/AndorCCD.h"
+#include "../../include/IDebuggable.h"
 
-class AndorBackend {
+class AndorBackend : public IDebuggable {
 public:
     AndorBackend();
-    ~AndorBackend();
+    ~AndorBackend() override;
 
     bool initCamera(const std::string& name);
     bool deinitCamera(const std::string& name);
     bool isInitialized(const std::string& name);
     bool setCooling(const std::string& name, int temperature);
+
+    bool handleDebugCommand(const std::string& cmd, const std::vector<std::string>& args, std::ostream& out) override;
 
 private:
     std::mutex m_andorMutex;

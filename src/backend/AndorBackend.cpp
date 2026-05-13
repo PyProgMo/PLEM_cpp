@@ -7,6 +7,7 @@ AndorBackend::AndorBackend() {
     m_cameraIndices["iDus"] = 1;
     m_cameraIndices["Clara"] = 2;
     m_cameraIndices["Xeva"] = 3;
+    m_cameraIndices["spectrograph"] = 0; // Assuming spectrograph is linked to primary Newton index, or handled internally
 }
 
 AndorBackend::~AndorBackend() {
@@ -73,5 +74,70 @@ bool AndorBackend::setCooling(const std::string& name, int temperature) {
             return false;
         }
     }
+    return false;
+}
+
+bool AndorBackend::handleDebugCommand(const std::string& cmd, const std::vector<std::string>& args, std::ostream& out) {
+    if (cmd == "init") {
+        if (args.empty()) {
+            out << "Usage: andor init <camera_name>" << std::endl;
+            return true;
+        }
+        std::string name = args[0];
+        if (initCamera(name)) {
+            out << "Camera '" << name << "' initialized successfully." << std::endl;
+        } else {
+            out << "Failed to initialize camera '" << name << "'." << std::endl;
+        }
+        return true;
+    } 
+    else if (cmd == "deinit") {
+        if (args.empty()) {
+            out << "Usage: andor deinit <camera_name>" << std::endl;
+            return true;
+        }
+        std::string name = args[0];
+        if (deinitCamera(name)) {
+            out << "Camera '" << name << "' deinitialized." << std::endl;
+        } else {
+            out << "Failed to deinitialize camera '" << name << "'." << std::endl;
+        }
+        return true;
+    }
+    else if (cmd == "temp") {
+        if (args.size() < 2) {
+            out << "Usage: andor temp <camera_name> <target_temp>" << std::endl;
+            return true;
+        }
+        std::string name = args[0];
+        int temp = std::stoi(args[1]);
+        if (setCooling(name, temp)) {
+            out << "Cooling for '" << name << "' set to " << temp << " degrees." << std::endl;
+        } else {
+            out << "Failed to set cooling for '" << name << "'." << std::endl;
+        }
+        return true;
+    }
+    else if (cmd == "status") {
+        if (args.empty()) {
+            out << "Usage: andor status <camera_name>" << std::endl;
+            return true;
+        }
+        std::string name = args[0];
+        std::lock_guard<std::mutex> lock(m_andorMutex);
+        if (m_cameras.find(name) != m_cameras.end()) {
+            try {
+                auto tempInfo = m_cameras[name]->getTemperature();
+                out << "Camera '" << name << "' status: Initialized" << std::endl;
+                out << "Temperature: " << tempInfo.first << " (" << tempInfo.second << ")" << std::endl;
+            } catch (const std::exception& e) {
+                out << "Error reading status for '" << name << "': " << e.what() << std::endl;
+            }
+        } else {
+            out << "Camera '" << name << "' is not initialized." << std::endl;
+        }
+        return true;
+    }
+    
     return false;
 }

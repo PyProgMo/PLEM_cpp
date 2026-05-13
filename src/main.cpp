@@ -32,6 +32,7 @@ int main(int argc, char** argv) {
     debugConsole.registerComponent("thorlabs", powermeter);
 
     AndorBackend* andorBackend = new AndorBackend();
+    debugConsole.registerComponent("andor", andorBackend);
 
     // Start the FBConnector engine and register components for shutdown
     FBConnector::get().setDebugConsole(&debugConsole);

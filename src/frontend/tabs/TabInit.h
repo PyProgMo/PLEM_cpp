@@ -223,8 +223,9 @@ public:
                     pm_toggle->value(status ? 1 : 0);
                     if (pm_led) pm_led->set_state(status);
                 }
-            } else if (i >= 5 && i <= 8) {
-                std::string camName = (i == 5) ? "Newton" : (i == 6) ? "iDus" : (i == 7) ? "Clara" : "Xeva";
+                pm_toggle->callback(pmToggleCallback, this);
+            } else if (i == 0 || (i >= 5 && i <= 8)) {
+                std::string camName = (i == 0) ? "spectrograph" : (i == 5) ? "Newton" : (i == 6) ? "iDus" : (i == 7) ? "Clara" : "Xeva";
                 CamData* cd = new CamData{this, camName, all_leds[i], tgl};
                 camDatas.push_back(cd);
                 
