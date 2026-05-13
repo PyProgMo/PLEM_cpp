@@ -65,7 +65,7 @@ public:
         // Left pane (40% of width)
         int lw = W * 40 / 100;
         DragAwareTabs* ltabs = new DragAwareTabs(0, 0, lw, H);
-        new TabConfiguration(0, 30, lw, H - 30, "Configuration");
+        new TabConfiguration(0, 30, lw, H - 30, "Configuration", andor);
         new TabTimedMeasurement(0, 30, lw, H - 30, "Timed Meas.");
         new TabAutoStage(0, 30, lw, H - 30, "Auto-Stage");
         new TabPLEM(0, 30, lw, H - 30, "PLEM");

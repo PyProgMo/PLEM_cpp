@@ -12,6 +12,9 @@
 #include <FL/Fl_Spinner.H>
 #include <FL/fl_draw.H>
 #include "LedButton.h"
+#include "../../fbconnector/FBConnector.h"
+#include <string>
+#include "../../backend/AndorBackend.h"
 
 class DragAwareSubTabs : public Fl_Tabs {
 public:
@@ -43,7 +46,7 @@ private:
 
 class TabConfiguration : public Fl_Group {
 public:
-    TabConfiguration(int X, int Y, int W, int H, const char* L = 0) : Fl_Group(X, Y, W, H, L) {
+    TabConfiguration(int X, int Y, int W, int H, const char* L = 0, AndorBackend* andor = nullptr) : Fl_Group(X, Y, W, H, L), m_andor(andor) {
         DragAwareSubTabs* subtabs = new DragAwareSubTabs(X + 5, Y + 5, W - 10, H - 10);
         
         Fl_Group* g_light = new Fl_Group(X + 5, Y + 30, W - 10, H - 35, "Lightsource");
@@ -167,36 +170,43 @@ public:
         
         // Slit Width (Float)
         Fl_Box* lbl_slit = new Fl_Box(X + 30, Y + 60, 100, 16, "Slit Width (µm)");
-        Fl_Float_Input* inp_slit = new Fl_Float_Input(X + 30, Y + 78, 180, 25);
+        inp_slit = new Fl_Float_Input(X + 30, Y + 78, 180, 25);
         inp_slit->value("250.0");
+        inp_slit->callback(cb_set_slit, this);
+        inp_slit->when(FL_WHEN_ENTER_KEY | FL_WHEN_NOT_CHANGED);
         
         // Grating (Combobox)
         Fl_Box* lbl_grating = new Fl_Box(X + 30, Y + 110, 100, 16, "Grating");
-        Fl_Choice* ch_grating = new Fl_Choice(X + 30, Y + 128, 180, 25);
+        ch_grating = new Fl_Choice(X + 30, Y + 128, 180, 25);
         ch_grating->add("1200 blz 300l mm");
         ch_grating->add("1200 blz 500l mm");
         ch_grating->add("600 blz 200l mm");
         ch_grating->value(0);
+        ch_grating->callback(cb_set_grating, this);
         
         // Central Wavelength (Float)
         Fl_Box* lbl_cwl = new Fl_Box(X + 30, Y + 160, 150, 16, "Central Wavelength (nm)");
-        Fl_Float_Input* inp_cwl = new Fl_Float_Input(X + 30, Y + 178, 180, 25);
+        inp_cwl = new Fl_Float_Input(X + 30, Y + 178, 180, 25);
         inp_cwl->value("950.0");
+        inp_cwl->callback(cb_set_cwl, this);
+        inp_cwl->when(FL_WHEN_ENTER_KEY | FL_WHEN_NOT_CHANGED);
         
         // Filter (Combobox)
         Fl_Box* lbl_filter = new Fl_Box(X + 30, Y + 210, 100, 16, "Filter");
-        Fl_Choice* ch_filter = new Fl_Choice(X + 30, Y + 228, 180, 25);
+        ch_filter = new Fl_Choice(X + 30, Y + 228, 180, 25);
         ch_filter->add("Empty");
         ch_filter->add("Longpass 900 nm");
         ch_filter->add("Bandpass 950 nm");
         ch_filter->value(0);
+        ch_filter->callback(cb_set_filter, this);
         
         // Shutter (Combobox)
         Fl_Box* lbl_shutter = new Fl_Box(X + 30, Y + 260, 100, 16, "Shutter");
-        Fl_Choice* ch_shutter = new Fl_Choice(X + 30, Y + 278, 180, 25);
+        ch_shutter = new Fl_Choice(X + 30, Y + 278, 180, 25);
         ch_shutter->add("Open");
         ch_shutter->add("Closed");
         ch_shutter->value(0);
+        ch_shutter->callback(cb_set_shutter, this);
         grp_spec_input->end();
 
         // Spectrograph Output Group (Right)
@@ -208,42 +218,42 @@ public:
         
         // Slit Width (Read-only)
         Fl_Box* lbl_slit_out = new Fl_Box(X + 270, Y + 60, 120, 16, "Slit Width (µm)");
-        Fl_Float_Input* out_slit = new Fl_Float_Input(X + 270, Y + 78, 150, 25);
+        out_slit = new Fl_Float_Input(X + 270, Y + 78, 150, 25);
         out_slit->readonly(1);
         out_slit->value("50.0");
-        Fl_Box* led_slit = new Fl_Box(FL_OVAL_BOX, X + 430, Y + 82, 12, 12, "");
+        led_slit = new Fl_Box(FL_OVAL_BOX, X + 430, Y + 82, 12, 12, "");
         led_slit->color(FL_RED);
         
         // Grating (Read-only)
         Fl_Box* lbl_grating_out = new Fl_Box(X + 270, Y + 110, 120, 16, "Grating");
-        Fl_Input* out_grating = new Fl_Input(X + 270, Y + 128, 150, 25);
+        out_grating = new Fl_Input(X + 270, Y + 128, 150, 25);
         out_grating->readonly(1);
         out_grating->value("1250 blz 150l/mm");
-        Fl_Box* led_grating = new Fl_Box(FL_OVAL_BOX, X + 430, Y + 132, 12, 12, "");
+        led_grating = new Fl_Box(FL_OVAL_BOX, X + 430, Y + 132, 12, 12, "");
         led_grating->color(FL_RED);
         
         // Central Wavelength (Read-only)
         Fl_Box* lbl_cwl_out = new Fl_Box(X + 270, Y + 160, 150, 16, "Central Wavelength (nm)");
-        Fl_Float_Input* out_cwl = new Fl_Float_Input(X + 270, Y + 178, 150, 25);
+        out_cwl = new Fl_Float_Input(X + 270, Y + 178, 150, 25);
         out_cwl->readonly(1);
         out_cwl->value("1000.00");
-        Fl_Box* led_cwl = new Fl_Box(FL_OVAL_BOX, X + 430, Y + 182, 12, 12, "");
+        led_cwl = new Fl_Box(FL_OVAL_BOX, X + 430, Y + 182, 12, 12, "");
         led_cwl->color(FL_RED);
         
         // Filter (Read-only)
         Fl_Box* lbl_filter_out = new Fl_Box(X + 270, Y + 210, 120, 16, "Filter");
-        Fl_Input* out_filter = new Fl_Input(X + 270, Y + 228, 150, 25);
+        out_filter = new Fl_Input(X + 270, Y + 228, 150, 25);
         out_filter->readonly(1);
         out_filter->value("Longpass 900 nm");
-        Fl_Box* led_filter = new Fl_Box(FL_OVAL_BOX, X + 430, Y + 232, 12, 12, "");
+        led_filter = new Fl_Box(FL_OVAL_BOX, X + 430, Y + 232, 12, 12, "");
         led_filter->color(FL_RED);
         
         // Shutter (Read-only)
         Fl_Box* lbl_shutter_out = new Fl_Box(X + 270, Y + 260, 120, 16, "Shutter");
-        Fl_Input* out_shutter = new Fl_Input(X + 270, Y + 278, 150, 25);
+        out_shutter = new Fl_Input(X + 270, Y + 278, 150, 25);
         out_shutter->readonly(1);
         out_shutter->value("Closed");
-        Fl_Box* led_shutter = new Fl_Box(FL_OVAL_BOX, X + 430, Y + 282, 12, 12, "");
+        led_shutter = new Fl_Box(FL_OVAL_BOX, X + 430, Y + 282, 12, 12, "");
         led_shutter->color(FL_RED);
         grp_spec_output->end();
 
@@ -274,14 +284,16 @@ public:
         Fl_Group* grp_spec_reset = new Fl_Group(X + 20, Y + 480, 200, 100);
         grp_spec_reset->box(FL_ENGRAVED_FRAME);
         
-        Fl_Light_Button* tgl_grating_reset = new Fl_Light_Button(X + 90, Y + 495, 60, 25, "grating");
+        tgl_grating_reset = new Fl_Light_Button(X + 90, Y + 495, 60, 25, "grating");
         tgl_grating_reset->selection_color(fl_rgb_color(255, 204, 0));
-        Fl_Box* led_grating_reset = new Fl_Box(FL_OVAL_BOX, X + 160, Y + 499, 12, 12, "");
+        tgl_grating_reset->callback(cb_reset_grating, this);
+        led_grating_reset = new Fl_Box(FL_OVAL_BOX, X + 160, Y + 499, 12, 12, "");
         led_grating_reset->color(FL_RED);
         
-        Fl_Light_Button* tgl_slit_reset = new Fl_Light_Button(X + 90, Y + 530, 60, 25, "slit");
+        tgl_slit_reset = new Fl_Light_Button(X + 90, Y + 530, 60, 25, "slit");
         tgl_slit_reset->selection_color(fl_rgb_color(255, 204, 0));
-        Fl_Box* led_slit_reset = new Fl_Box(FL_OVAL_BOX, X + 160, Y + 534, 12, 12, "");
+        tgl_slit_reset->callback(cb_reset_slit, this);
+        led_slit_reset = new Fl_Box(FL_OVAL_BOX, X + 160, Y + 534, 12, 12, "");
         led_slit_reset->color(FL_RED);
         grp_spec_reset->end();
 
@@ -725,5 +737,196 @@ public:
         
         subtabs->end();
         end();
+    }
+
+private:
+    AndorBackend* m_andor;
+
+    // Spectrograph Inputs
+    Fl_Float_Input* inp_slit;
+    Fl_Choice* ch_grating;
+    Fl_Float_Input* inp_cwl;
+    Fl_Choice* ch_filter;
+    Fl_Choice* ch_shutter;
+    
+    // Spectrograph Outputs
+    Fl_Float_Input* out_slit;
+    Fl_Box* led_slit;
+    Fl_Input* out_grating;
+    Fl_Box* led_grating;
+    Fl_Float_Input* out_cwl;
+    Fl_Box* led_cwl;
+    Fl_Input* out_filter;
+    Fl_Box* led_filter;
+    Fl_Input* out_shutter;
+    Fl_Box* led_shutter;
+    
+    // Resets
+    Fl_Light_Button* tgl_grating_reset;
+    Fl_Box* led_grating_reset;
+    Fl_Light_Button* tgl_slit_reset;
+    Fl_Box* led_slit_reset;
+
+    static void cb_set_slit(Fl_Widget* w, void* data) {
+        TabConfiguration* tab = static_cast<TabConfiguration*>(data);
+        if (!tab->m_andor) return;
+        float width = std::stof(tab->inp_slit->value());
+        
+        tab->led_slit->color(fl_rgb_color(255, 204, 0)); // yellow processing
+        tab->led_slit->redraw();
+        
+        FBConnector::get().enqueueTask([tab, width]() {
+            bool success = tab->m_andor->setSlitWidth(width);
+            FBConnector::get().enqueueUIUpdate([tab, success, width]() {
+                if (success) {
+                    tab->out_slit->value(std::to_string(width).c_str());
+                    tab->led_slit->color(FL_GREEN);
+                } else {
+                    tab->led_slit->color(FL_RED);
+                }
+                tab->led_slit->redraw();
+            });
+        });
+    }
+
+    static void cb_set_grating(Fl_Widget* w, void* data) {
+        TabConfiguration* tab = static_cast<TabConfiguration*>(data);
+        if (!tab->m_andor) return;
+        int index = tab->ch_grating->value();
+        std::string text = tab->ch_grating->text();
+        
+        tab->led_grating->color(fl_rgb_color(255, 204, 0));
+        tab->led_grating->redraw();
+        
+        FBConnector::get().enqueueTask([tab, index, text]() {
+            bool success = tab->m_andor->setGrating(index);
+            FBConnector::get().enqueueUIUpdate([tab, success, text]() {
+                if (success) {
+                    tab->out_grating->value(text.c_str());
+                    tab->led_grating->color(FL_GREEN);
+                } else {
+                    tab->led_grating->color(FL_RED);
+                }
+                tab->led_grating->redraw();
+            });
+        });
+    }
+
+    static void cb_set_cwl(Fl_Widget* w, void* data) {
+        TabConfiguration* tab = static_cast<TabConfiguration*>(data);
+        if (!tab->m_andor) return;
+        float wl = std::stof(tab->inp_cwl->value());
+        
+        tab->led_cwl->color(fl_rgb_color(255, 204, 0));
+        tab->led_cwl->redraw();
+        
+        FBConnector::get().enqueueTask([tab, wl]() {
+            bool success = tab->m_andor->setCentralWavelength(wl);
+            FBConnector::get().enqueueUIUpdate([tab, success, wl]() {
+                if (success) {
+                    tab->out_cwl->value(std::to_string(wl).c_str());
+                    tab->led_cwl->color(FL_GREEN);
+                } else {
+                    tab->led_cwl->color(FL_RED);
+                }
+                tab->led_cwl->redraw();
+            });
+        });
+    }
+
+    static void cb_set_filter(Fl_Widget* w, void* data) {
+        TabConfiguration* tab = static_cast<TabConfiguration*>(data);
+        if (!tab->m_andor) return;
+        int index = tab->ch_filter->value();
+        std::string text = tab->ch_filter->text();
+        
+        tab->led_filter->color(fl_rgb_color(255, 204, 0));
+        tab->led_filter->redraw();
+        
+        FBConnector::get().enqueueTask([tab, index, text]() {
+            bool success = tab->m_andor->setFilter(index);
+            FBConnector::get().enqueueUIUpdate([tab, success, text]() {
+                if (success) {
+                    tab->out_filter->value(text.c_str());
+                    tab->led_filter->color(FL_GREEN);
+                } else {
+                    tab->led_filter->color(FL_RED);
+                }
+                tab->led_filter->redraw();
+            });
+        });
+    }
+
+    static void cb_set_shutter(Fl_Widget* w, void* data) {
+        TabConfiguration* tab = static_cast<TabConfiguration*>(data);
+        if (!tab->m_andor) return;
+        int index = tab->ch_shutter->value();
+        std::string text = tab->ch_shutter->text();
+        
+        tab->led_shutter->color(fl_rgb_color(255, 204, 0));
+        tab->led_shutter->redraw();
+        
+        FBConnector::get().enqueueTask([tab, index, text]() {
+            bool success = tab->m_andor->setShutter(index);
+            FBConnector::get().enqueueUIUpdate([tab, success, text]() {
+                if (success) {
+                    tab->out_shutter->value(text.c_str());
+                    tab->led_shutter->color(FL_GREEN);
+                } else {
+                    tab->led_shutter->color(FL_RED);
+                }
+                tab->led_shutter->redraw();
+            });
+        });
+    }
+
+    static void cb_reset_grating(Fl_Widget* w, void* data) {
+        TabConfiguration* tab = static_cast<TabConfiguration*>(data);
+        if (!tab->m_andor) return;
+        
+        tab->led_grating_reset->color(fl_rgb_color(255, 204, 0));
+        tab->led_grating_reset->redraw();
+        
+        FBConnector::get().enqueueTask([tab]() {
+            bool success = tab->m_andor->resetGrating();
+            FBConnector::get().enqueueUIUpdate([tab, success]() {
+                tab->tgl_grating_reset->value(0); // Turn block off
+                if (success) {
+                    tab->led_grating_reset->color(FL_GREEN);
+                    tab->ch_grating->value(0);
+                    tab->out_grating->value(tab->ch_grating->text());
+                    tab->led_grating->color(FL_GREEN);
+                    tab->led_grating->redraw();
+                } else {
+                    tab->led_grating_reset->color(FL_RED);
+                }
+                tab->led_grating_reset->redraw();
+            });
+        });
+    }
+
+    static void cb_reset_slit(Fl_Widget* w, void* data) {
+        TabConfiguration* tab = static_cast<TabConfiguration*>(data);
+        if (!tab->m_andor) return;
+        
+        tab->led_slit_reset->color(fl_rgb_color(255, 204, 0));
+        tab->led_slit_reset->redraw();
+        
+        FBConnector::get().enqueueTask([tab]() {
+            bool success = tab->m_andor->resetSlit();
+            FBConnector::get().enqueueUIUpdate([tab, success]() {
+                tab->tgl_slit_reset->value(0); // Turn block off
+                if (success) {
+                    tab->led_slit_reset->color(FL_GREEN);
+                    tab->inp_slit->value("50.0");
+                    tab->out_slit->value("50.0");
+                    tab->led_slit->color(FL_GREEN);
+                    tab->led_slit->redraw();
+                } else {
+                    tab->led_slit_reset->color(FL_RED);
+                }
+                tab->led_slit_reset->redraw();
+            });
+        });
     }
 };

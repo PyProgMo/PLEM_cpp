@@ -77,6 +77,67 @@ bool AndorBackend::setCooling(const std::string& name, int temperature) {
     return false;
 }
 
+bool AndorBackend::setSlitWidth(float width) {
+    std::lock_guard<std::mutex> lock(m_andorMutex);
+    if (width < 10.0f || width > 2500.0f) {
+        ErrorLogger::GetInstance().LogError(ErrorCodes::CATEGORY_SPECTROGRAPH, 0x1101, "Slit Width Out of Range", "Width must be between 10µm and 2500µm");
+        return false;
+    }
+    // Simulate setting hardware slit width
+    m_slitWidth = width;
+    return true;
+}
+
+bool AndorBackend::setGrating(int index) {
+    std::lock_guard<std::mutex> lock(m_andorMutex);
+    if (index < 0 || index > 2) {
+        ErrorLogger::GetInstance().LogError(ErrorCodes::CATEGORY_SPECTROGRAPH, 0x1102, "Invalid Grating Index", "Selected grating does not exist");
+        return false;
+    }
+    m_gratingIndex = index;
+    return true;
+}
+
+bool AndorBackend::setCentralWavelength(float wavelength) {
+    std::lock_guard<std::mutex> lock(m_andorMutex);
+    if (wavelength < 200.0f || wavelength > 1200.0f) {
+        ErrorLogger::GetInstance().LogError(ErrorCodes::CATEGORY_SPECTROGRAPH, 0x1103, "Wavelength Out of Bounds", "Central wavelength must be between 200nm and 1200nm");
+        return false;
+    }
+    m_centralWavelength = wavelength;
+    return true;
+}
+
+bool AndorBackend::setFilter(int index) {
+    std::lock_guard<std::mutex> lock(m_andorMutex);
+    if (index < 0 || index > 2) {
+        ErrorLogger::GetInstance().LogError(ErrorCodes::CATEGORY_SPECTROGRAPH, 0x1104, "Invalid Filter Index", "Filter index out of bounds");
+        return false;
+    }
+    m_filterIndex = index;
+    return true;
+}
+
+bool AndorBackend::setShutter(int state) {
+    std::lock_guard<std::mutex> lock(m_andorMutex);
+    m_shutterState = state;
+    return true;
+}
+
+bool AndorBackend::resetGrating() {
+    std::lock_guard<std::mutex> lock(m_andorMutex);
+    // Simulate reset behavior
+    m_gratingIndex = 0;
+    return true;
+}
+
+bool AndorBackend::resetSlit() {
+    std::lock_guard<std::mutex> lock(m_andorMutex);
+    // Simulate reset behavior
+    m_slitWidth = 50.0f;
+    return true;
+}
+
 bool AndorBackend::handleDebugCommand(const std::string& cmd, const std::vector<std::string>& args, std::ostream& out) {
     if (cmd == "init") {
         if (args.empty()) {
@@ -136,6 +197,28 @@ bool AndorBackend::handleDebugCommand(const std::string& cmd, const std::vector<
         } else {
             out << "Camera '" << name << "' is not initialized." << std::endl;
         }
+        out << "Spectrograph Status: Slit=" << m_slitWidth << " Grating=" << m_gratingIndex 
+            << " CWL=" << m_centralWavelength << " Filter=" << m_filterIndex << " Shutter=" << m_shutterState << std::endl;
+        return true;
+    }
+    else if (cmd == "set_slit") {
+        if (args.empty()) {
+            out << "Usage: andor set_slit <width>" << std::endl;
+            return true;
+        }
+        float w = std::stof(args[0]);
+        if (setSlitWidth(w)) out << "Slit width set to " << w << std::endl;
+        else out << "Failed to set slit width." << std::endl;
+        return true;
+    }
+    else if (cmd == "set_wl") {
+        if (args.empty()) {
+            out << "Usage: andor set_wl <nm>" << std::endl;
+            return true;
+        }
+        float wl = std::stof(args[0]);
+        if (setCentralWavelength(wl)) out << "Central wavelength set to " << wl << " nm" << std::endl;
+        else out << "Failed to set wavelength." << std::endl;
         return true;
     }
     
