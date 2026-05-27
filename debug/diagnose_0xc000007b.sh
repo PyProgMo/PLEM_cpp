@@ -10,7 +10,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-EXE_PATH="${1:-build/windows/Template.exe}"
+EXE_PATH="${1:-build/windows/PLEMv5.exe}"
 RUNTIME_DIRS=("build/windows" "build/dlls")
 DEV_DIRS=("/mingw64/bin" "/mingw32/bin")
 SCAN_DIRS=("${RUNTIME_DIRS[@]}" "${DEV_DIRS[@]}")
@@ -205,7 +205,7 @@ echo ""
 
 EXIT_STATUS=0
 
-if ! inspect_file "$EXE_PATH" "Template.exe" "Template.exe"; then
+if ! inspect_file "$EXE_PATH" "PLEMv5.exe" "PLEMv5.exe"; then
     EXIT_STATUS=1
 fi
 

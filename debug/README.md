@@ -13,7 +13,7 @@ bash debug/diagnose_0xc000007b.sh
 Optional target path:
 
 ```bash
-bash debug/diagnose_0xc000007b.sh build/windows/Template.exe
+bash debug/diagnose_0xc000007b.sh build/windows/PLEMv5.exe
 ```
 
 The script focuses on the executable and the DLLs in `build/windows/` and `build/dlls/`, then reports only missing or 32-bit dependencies unless everything passes.

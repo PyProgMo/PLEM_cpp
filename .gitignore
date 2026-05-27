@@ -16,8 +16,8 @@ Thumbs.db
 *.userosscache
 *.sln.docstates
 
-# ignore specificlly build/windows/Template.exe
-build/windows/Template.exe
+# ignore specificlly build/windows/PLEMv5.exe
+build/windows/PLEMv5.exe
 
 # ignore standalone devices
 standalone_devices/

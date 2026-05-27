@@ -5,7 +5,7 @@
 
 ## Quick Diagnosis
 
-If you see error 0xc000007b when running `Template.exe`:
+If you see error 0xc000007b when running `PLEMv5.exe`:
 
 ```
 The application was unable to start correctly (0xc000007b)
@@ -121,11 +121,11 @@ TLPM_64.dll: PE32+ executable (x86-64)...
 
 ```bash
 # Check executable is 64-bit
-file Template.exe
+file PLEMv5.exe
 # Should show: PE32+ executable (x86-64)
 
 # Try running it
-./Template.exe
+./PLEMv5.exe
 ```
 
 ## Complete Fix Checklist
@@ -134,7 +134,7 @@ Use this if all else fails:
 
 ```bash
 # 1. Clean everything
-rm -rf build/windows/Template.exe
+rm -rf build/windows/PLEMv5.exe
 rm build/windows/*.dll
 
 # 2. Check compiler
@@ -159,10 +159,10 @@ bash debug/diagnose_0xc000007b.sh
 
 # 8. Verify result
 file build/windows/*.dll
-file build/windows/Template.exe
+file build/windows/PLEMv5.exe
 
 # 9. Test
-./build/windows/Template.exe
+./build/windows/PLEMv5.exe
 ```
 
 ## Understanding the Error

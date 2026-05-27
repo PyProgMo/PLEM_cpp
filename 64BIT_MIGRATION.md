@@ -54,7 +54,7 @@ All runtime DLLs are sourced from MSYS2 MinGW64 64-bit installation:
 ### Deployment Location (64-bit)
 ```
 build/windows/
-├── Template.exe           (64-bit executable)
+├── PLEMv5.exe           (64-bit executable)
 ├── TLPM_64.dll           (64-bit)
 ├── libfltk.dll           (64-bit)
 ├── libfltk_images.dll    (64-bit)
@@ -124,7 +124,7 @@ cp /mingw64/bin/libz.dll build/windows/ || true
 ### After Building
 1. Check executable is 64-bit:
    ```bash
-   file build/windows/Template.exe
+   file build/windows/PLEMv5.exe
    # Output should show: PE32+ executable (x86-64)
    ```
 
@@ -148,7 +148,7 @@ cp /mingw64/bin/libz.dll build/windows/ || true
 
 ### Testing on Target Machine
 1. Copy `build/windows/` folder to target machine
-2. Run `Template.exe` - should start GUI without errors
+2. Run `PLEMv5.exe` - should start GUI without errors
 3. No "DLL not found" errors should appear
 
 ## Troubleshooting

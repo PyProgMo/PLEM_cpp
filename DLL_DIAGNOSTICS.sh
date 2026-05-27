@@ -173,8 +173,8 @@ echo ""
 # Check compiled executable (if it exists)
 echo -e "${BLUE}5. Checking Compiled Executable${NC}"
 
-if [ -f "build/windows/Template.exe" ]; then
-    check_architecture "build/windows/Template.exe" || EXIT_STATUS=1
+if [ -f "build/windows/PLEMv5.exe" ]; then
+    check_architecture "build/windows/PLEMv5.exe" || EXIT_STATUS=1
 else
     echo -e "   ${YELLOW}⊘ Executable not yet built${NC}"
 fi

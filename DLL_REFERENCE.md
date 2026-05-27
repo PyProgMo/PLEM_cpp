@@ -128,7 +128,7 @@ build/windows/TLPM_64.dll
 ### Deployment to Target Machine
 
 1. Copy entire `build/windows/` folder to target machine
-2. Run `Template.exe` - should start GUI without DLL errors
+2. Run `PLEMv5.exe` - should start GUI without DLL errors
 3. No additional installation required
 
 ---

@@ -55,9 +55,9 @@ else
 fi
 echo ""
 
-if tasklist 2>/dev/null | grep -q "Template.exe"; then
-    echo "Closing running Template.exe to avoid file lock..."
-    taskkill -F -IM Template.exe >/dev/null 2>&1
+if tasklist 2>/dev/null | grep -q "PLEMv5.exe"; then
+    echo "Closing running PLEMv5.exe to avoid file lock..."
+    taskkill -F -IM PLEMv5.exe >/dev/null 2>&1
     sleep 1
 fi
 
@@ -74,7 +74,7 @@ $COMPILER -std=c++17 \
     standalone_devices/andorwrapper/cpp/AndorCCD.cpp \
     src/fbconnector/FBConnector.cpp \
     standalone_devices/thorlabs_powermeter/tl100d_reader/src/ThorlabsPM.cpp \
-    -o build/windows/Template.exe \
+    -o build/windows/PLEMv5.exe \
     -mwindows \
     -L/mingw64/lib \
     -Lstandalone_devices/thorlabs_powermeter/dll \
@@ -83,8 +83,8 @@ $COMPILER -std=c++17 \
     -latmcd64d \
     -lfltk_images -lpng -lz -lfltk -lgdi32 -lcomdlg32 -lcomctl32 -lole32 -luuid -lws2_32 -lkernel32 -luser32 -lgdiplus -lshell32 -lwinspool -ladvapi32 -static-libgcc
 
-if [ -f build/windows/Template.exe ]; then
-    echo "Build successful! Executable: build/windows/Template.exe"
+if [ -f build/windows/PLEMv5.exe ]; then
+    echo "Build successful! Executable: build/windows/PLEMv5.exe"
     echo ""
     
     # Find FLTK installation path (best-effort, do not abort here if --force)
@@ -327,13 +327,13 @@ if [ -f build/windows/Template.exe ]; then
     
     if [ "$START_AFTER_BUILD" = true ]; then
         echo -e "${BLUE}Starting application...${NC}"
-        EXE_PATH="build/windows/Template.exe"
+        EXE_PATH="build/windows/PLEMv5.exe"
         if command -v cygpath >/dev/null 2>&1 && command -v powershell.exe >/dev/null 2>&1; then
             EXE_WIN_PATH=$(cygpath -w "$EXE_PATH")
             WORKDIR_WIN_PATH=$(cygpath -w "$PWD")
             powershell.exe -NoProfile -Command "Start-Process -FilePath '$EXE_WIN_PATH' -WorkingDirectory '$WORKDIR_WIN_PATH'" >/dev/null 2>&1
         else
-            ./build/windows/Template.exe &
+            ./build/windows/PLEMv5.exe &
         fi
     fi
 else

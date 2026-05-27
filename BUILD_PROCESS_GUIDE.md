@@ -132,7 +132,7 @@ bash DLL_DIAGNOSTICS.sh
 ### debug/diagnose_0xc000007b.sh (Runtime Dependency Check)
 
 **What it does:**
-- Scans `build/windows/Template.exe` and the DLLs in `build/windows/` and `build/dlls/`
+- Scans `build/windows/PLEMv5.exe` and the DLLs in `build/windows/` and `build/dlls/`
 - Resolves imported DLLs with `objdump`
 - Reports missing or 32-bit runtime dependencies that can cause 0xc000007b
 - Stays failure-focused so clean runs stay compact
@@ -247,7 +247,7 @@ Before running your application:
 - [ ] Check output for ✓ green checkmarks
 - [ ] Verify `build/windows/` contains 5 DLLs (or 4 if libpng.dll instead of libpng16.dll)
 - [ ] Verify `file build/windows/*.dll` shows "PE32+ executable" for all
-- [ ] Test: `./build/windows/Template.exe` (from cmd, not MSYS2)
+- [ ] Test: `./build/windows/PLEMv5.exe` (from cmd, not MSYS2)
 - [ ] If 0xc000007b error: Read [ERROR_0xC000007B_GUIDE.md](ERROR_0xC000007B_GUIDE.md)
 
 ## Troubleshooting Reference
