@@ -7,6 +7,7 @@ This is an FLTK desktop application for basic hyperspectral measurement workflow
 - `include/` - Header files
 - `build/` - Compiled binaries and build artifacts
 - `build_windows.sh`, `build_linux.sh`, `build_mac.sh` - Build scripts for each platform
+- 'standalone_devices' contains the third party repos that are to be included into the project (each device has its own repo)
 
 ## Building
 Run the appropriate build script for your platform:

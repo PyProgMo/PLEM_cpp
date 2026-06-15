@@ -1,0 +1,5 @@
+get nanostage and spectrometer running: 
+- nanostage alone
+- spectrometer alone
+- both together
+- integrate both into the software
